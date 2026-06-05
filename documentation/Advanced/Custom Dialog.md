@@ -14,7 +14,7 @@ In general a custom dialog is made as simple as following (info dialog is exactl
  */
 @Composable
 fun DialogInfo(
-    state: DialogState,
+    state: BaseDialogState,
     // Custom - Required
     info: String,
     // Custom - Optional

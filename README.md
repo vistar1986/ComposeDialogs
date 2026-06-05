@@ -243,6 +243,24 @@ LazyColumn {
 }
 ```
 
+#### ViewModel / usage outside of composable
+
+If you want to hold the dialog state inside a `ViewModel` or similar you can use the `dialogStateOf` functions.
+
+```kotlin
+
+// simple usage
+val dialog = dialogStateOf() // a state that holds no data, just visibility information
+val dialog = dialogStateOf<String?>(data = null) // a state that holds some data
+
+// if the state should survive process death, you can use following pattern with `SavedStateHandle`
+private val KEY = "dialog_data"
+val dialog = dialogStateOf(
+	data = savedStateHandle.get<String?>(KEY),
+	onStateChanged = { savedStateHandle[KEY] = it }
+)
+```
+
 #### Styling/Customisation and events
 
 All dialog (also custom ones) do support styling like:
