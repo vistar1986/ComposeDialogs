@@ -16,6 +16,7 @@ import androidx.compose.runtime.setValue
 import com.michaelflisar.composedialogs.core.ComposeDialogStyle
 import com.michaelflisar.composedialogs.core.DialogButtonType
 import com.michaelflisar.composedialogs.core.rememberDialogState
+import com.michaelflisar.composedialogs.core.show
 import com.michaelflisar.democomposables.DemoButton
 import com.michaelflisar.democomposables.layout.DemoRegion
 import com.michaelflisar.democomposables.layout.DemoRow

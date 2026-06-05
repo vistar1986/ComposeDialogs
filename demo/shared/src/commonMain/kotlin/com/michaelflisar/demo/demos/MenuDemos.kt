@@ -8,6 +8,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import com.michaelflisar.composedialogs.core.ComposeDialogStyle
 import com.michaelflisar.composedialogs.core.rememberDialogState
+import com.michaelflisar.composedialogs.core.show
 import com.michaelflisar.democomposables.DemoButton
 import com.michaelflisar.democomposables.layout.DemoRegion
 import com.michaelflisar.democomposables.layout.DemoRow

@@ -7,6 +7,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import com.michaelflisar.composedialogs.core.ComposeDialogStyle
 import com.michaelflisar.composedialogs.core.rememberDialogState
+import com.michaelflisar.composedialogs.core.show
 import com.michaelflisar.composedialogs.dialogs.frequency.DialogFrequency
 import com.michaelflisar.composedialogs.dialogs.frequency.classes.Frequency
 import com.michaelflisar.composedialogs.dialogs.frequency.rememberDialogFrequency

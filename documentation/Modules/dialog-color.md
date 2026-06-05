@@ -58,7 +58,7 @@ if (state.visible) {
 @Composable
 fun DialogColor(
     // Base Dialog - State
-    state: BaseDialogState,
+    state: DialogState,
     // Custom - Required
     color: MutableState<Color>,
     // Custom - Optional

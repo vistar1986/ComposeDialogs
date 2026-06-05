@@ -359,7 +359,7 @@ class DialogInteractionSource internal constructor(
 )
 
 /**
- * a dialog state holding the current showing state and the some additional state [DialogInteractionSource] of the dialog
+ * a dialog state holding the current showing state and some additional state [DialogInteractionSource] of the dialog
  */
 abstract class BaseDialogState {
 
@@ -469,17 +469,7 @@ class DialogState<T> internal constructor(
     }
 
     /**
-     * convenience for Unit dialogs
-     */
-    fun show() {
-        check(noData) { "show() only valid for DialogState<Boolean>" }
-        @Suppress("UNCHECKED_CAST")
-        show(true as T)
-    }
-
-
-    /**
-     * this will return the currently holded data
+     * this will return the currently held data
      */
     val data: T?
         get() = state.value
@@ -488,6 +478,13 @@ class DialogState<T> internal constructor(
      * should only be called if dialog is shown
      */
     fun requireData() = state.value!!
+}
+
+/**
+ * convenience for no data dialogs (internal state is a boolean, but the overload does not require a data parameter)
+ */
+fun DialogState<Boolean>.show() {
+    show(true)
 }
 
 /**

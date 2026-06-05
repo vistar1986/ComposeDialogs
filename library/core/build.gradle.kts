@@ -95,7 +95,9 @@ kotlin {
             implementation(libs.jetbrains.compose.material.icons.core)
 
             // Compose Unstyled
-            implementation(deps.composables.core)
+            implementation(deps.composables.dialog)
+            implementation(deps.composables.modal)
+            implementation(deps.composables.modal.bottom.sheet)
         }
 
         androidMain.dependencies {

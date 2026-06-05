@@ -124,7 +124,7 @@ There are 2 main composables for this dialog, one for a string and for a numeric
 @Composable
 fun DialogInput(
     // Base Dialog - State
-    state: BaseDialogState,
+    state: DialogState,
     // Custom - Required
     value: MutableState<String>,
     label: String = "",
@@ -185,7 +185,7 @@ fun DialogInput(
 @Composable
 fun <T : Number> DialogInputNumber(
     // Base Dialog - State
-    state: BaseDialogState,
+    state: DialogState,
     // Custom - Required
     value: MutableState<T>,
     label: String = "",

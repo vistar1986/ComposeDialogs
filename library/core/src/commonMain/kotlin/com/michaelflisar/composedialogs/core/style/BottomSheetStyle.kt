@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
@@ -42,15 +41,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import com.composables.core.DragIndication
-import com.composables.core.ModalBottomSheet
-import com.composables.core.ModalSheetProperties
-import com.composables.core.Scrim
-import com.composables.core.Sheet
-import com.composables.core.SheetDetent
-import com.composables.core.rememberModalBottomSheetState
+import com.composeunstyled.DragIndication
+import com.composeunstyled.ModalBottomSheetProperties
+import com.composeunstyled.Scrim
+import com.composeunstyled.Sheet
+import com.composeunstyled.SheetDetent
+import com.composeunstyled.UnstyledModalBottomSheet
+import com.composeunstyled.rememberModalBottomSheetState
 import com.michaelflisar.composedialogs.core.BaseDialogState
-import com.michaelflisar.composedialogs.core.DialogState
 import com.michaelflisar.composedialogs.core.ComposeDialogStyle
 import com.michaelflisar.composedialogs.core.DialogButtons
 import com.michaelflisar.composedialogs.core.DialogEvent
@@ -65,7 +63,7 @@ import kotlin.math.roundToInt
 object BottomSheetStyleDefaults {
 
     val peekHeight: (containerHeight: Dp, sheetHeight: Dp) -> Dp =
-        { containerHeight, sheetHeight -> containerHeight * .5f }
+        { containerHeight, sheetHeight -> (containerHeight * .5f).coerceAtMost(sheetHeight) }
 
     val shape: Shape
         @Composable get() = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
@@ -100,7 +98,7 @@ internal class BottomSheetStyle(
     private val containerColor: Color,
     private val iconColor: Color,
     private val titleColor: Color,
-    private val contentColor: Color
+    private val contentColor: Color,
 ) : ComposeDialogStyle {
 
     override val type = ComposeDialogStyle.Type.BottomSheet
@@ -113,7 +111,7 @@ internal class BottomSheetStyle(
         options: DialogOptions,
         state: BaseDialogState,
         onEvent: (event: DialogEvent) -> Unit,
-        content: @Composable () -> Unit
+        content: @Composable () -> Unit,
     ) {
         val coroutineScope = rememberCoroutineScope()
 
@@ -145,19 +143,25 @@ internal class BottomSheetStyle(
             velocityThreshold = velocityThreshold,
             positionalThreshold = positionalThreshold
         )
-        val bottomSheetProperties = ModalSheetProperties(
+        val bottomSheetProperties = ModalBottomSheetProperties(
             dismissOnBackPress = shouldDismissOnBackPress,
-            dismissOnClickOutside = shouldDismissOnClickOutside
+            dismissOnClickOutside = shouldDismissOnClickOutside,
+            offsetForIme = true
         )
 
-        val onDismiss = { buttonPressed: Boolean ->
+        var buttonPressed = false
+        //var dismissed = false
+        val onDismiss = {
             if (state.interactionSource.dismissAllowed.value) {
                 coroutineScope.launch {
+                    //println("dismissed - animateTo...")
+                    //dismissed = true
                     bottomSheetState.animateTo(SheetDetent.Hidden)
                     if (buttonPressed)
                         state.dismiss()
                     else
                         state.dismiss(onEvent)
+                    //println("dismissed - state.visible = ${state.visible}")
                 }
                 true
             } else {
@@ -167,6 +171,17 @@ internal class BottomSheetStyle(
         }
 
         val density = LocalDensity.current
+
+        // Hack, to detect hidden state after animation because animateTo does work reliably
+        LaunchedEffect(bottomSheetState.currentDetent) {
+            if (initialAnimationDone.value &&
+                bottomSheetState.currentDetent == SheetDetent.Hidden &&
+                bottomSheetState.targetDetent == SheetDetent.Hidden
+            ) {
+                //println("Detent is hidden => calling onDismiss...")
+                onDismiss()
+            }
+        }
 
         //LaunchedEffect(bottomSheetState.isIdle) {
         //    println("TEST - isIdle = ${bottomSheetState.isIdle} | target = ${bottomSheetState.currentDetent.identifier} | interaction allowed = ${state.interactionSource.dismissAllowed.value}")
@@ -186,38 +201,48 @@ internal class BottomSheetStyle(
             }
         }
 
-        ModalBottomSheet(
+        val scrimSize = remember { mutableStateOf(DpSize.Zero) }
+
+        UnstyledModalBottomSheet(
             state = bottomSheetState,
             properties = bottomSheetProperties,
             onDismiss = {
-                onDismiss(false)
+                onDismiss()
+            },
+            overlay = {
+                if (scrim) {
+                    Scrim(
+                        enter = fadeIn(),
+                        exit = fadeOut(),
+                        scrimColor = MaterialTheme.colorScheme.scrim.copy(0.3f),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .onSizeChanged {
+                                scrimSize.value =
+                                    with(density) { DpSize(it.width.toDp(), it.height.toDp()) }
+                            }
+                    )
+                }
             }
         ) {
 
-            val contentSize = remember { mutableStateOf(DpSize.Zero) }
-            val scrimSize = remember { mutableStateOf(DpSize.Zero) }
+            val footerSize = remember { mutableStateOf(DpSize.Zero) }
+            val sheetSize = remember { mutableStateOf(DpSize.Zero) }
+
+            val paddingTop = 12.dp
+            val dragHandleHeight = 4.dp
+            val dragHandleVerticalPadding = 22.dp
+
             val isCompact by remember {
                 derivedStateOf {
                     scrimSize.value.width < 640.dp
                 }
             }
 
-            if (scrim) {
-                Scrim(
-                    enter = fadeIn(),
-                    exit = fadeOut(),
-                    scrimColor = MaterialTheme.colorScheme.scrim.copy(0.3f),
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .onSizeChanged {
-                            scrimSize.value =
-                                with(density) { DpSize(it.width.toDp(), it.height.toDp()) }
-                        }
-                )
-            }
             Box(
                 modifier = Modifier
-                    .padding(top = 12.dp)
+                    .fillMaxWidth()
+                    .padding(top = paddingTop)
                     .then(
                         if (isCompact) {
                             Modifier
@@ -228,12 +253,13 @@ internal class BottomSheetStyle(
                         WindowInsets.navigationBars
                             .only(WindowInsetsSides.Horizontal)
                             .asPaddingValues()
-                    )
+                    ),
+                contentAlignment = Alignment.TopCenter,
             ) {
                 Sheet(
                     modifier = Modifier
                         .onSizeChanged {
-                            contentSize.value =
+                            sheetSize.value =
                                 with(density) { DpSize(it.width.toDp(), it.height.toDp()) }
                         }
                         .shadow(4.dp, shape)
@@ -241,13 +267,11 @@ internal class BottomSheetStyle(
                         .background(containerColor)
                         .widthIn(max = 640.dp)
                         .fillMaxWidth()
-                        .imePadding()
                 ) {
 
                     Column(
                         Modifier
                             .fillMaxWidth()
-
                     ) {
 
                         // 1) Drag Header On Top
@@ -255,19 +279,20 @@ internal class BottomSheetStyle(
                             DragIndication(
                                 modifier = Modifier
                                     .align(Alignment.CenterHorizontally)
-                                    .padding(vertical = 22.dp)
+                                    .padding(vertical = dragHandleVerticalPadding)
                                     .background(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         shape = RoundedCornerShape(percent = 50)
                                     )
                                     .width(32.dp)
-                                    .height(4.dp)
+                                    .height(dragHandleHeight)
                             )
                         }
 
                         // 2) Icon + Title
                         ComposeDialogTitle(
-                            modifier = Modifier.padding(horizontal = 24.dp),
+                            modifier = Modifier
+                                .padding(horizontal = 24.dp),
                             title = title,
                             icon = icon,
                             iconColor = iconColor,
@@ -287,12 +312,30 @@ internal class BottomSheetStyle(
                         // 4) Footer
                         Column(
                             modifier = Modifier
+                                .onSizeChanged {
+                                    footerSize.value =
+                                        with(density) { DpSize(it.width.toDp(), it.height.toDp()) }
+                                }
                                 .then(
                                     if (buttons.enabled) {
                                         Modifier.offset {
+                                            val limit =
+                                                paddingTop.toPx() + footerSize.value.height.toPx() +
+                                                        (if (dragHandle) (dragHandleHeight.toPx() + dragHandleVerticalPadding.toPx() * 2) else 0f)
+
+
+                                            var yOffset =
+                                                (sheetSize.value.height.toPx() + paddingTop.toPx() - bottomSheetState.offset).roundToInt() * -1 + 1
+                                            if (bottomSheetState.offset < limit) {
+                                                // we only see the buttons and handle anymore
+                                                //println("bottom reached")
+                                                yOffset += (limit - bottomSheetState.offset).roundToInt()
+                                            }
+
+                                            println("yOffset = $yOffset | sheet height = ${sheetSize.value.height} | offset = ${bottomSheetState.offset} | limit = $limit")
                                             IntOffset(
                                                 0,
-                                                (contentSize.value.height.toPx() - bottomSheetState.offset).roundToInt() * -1 + 1 // +1 for rounding errors? otherwise it sometimes does show a pixel row below the bottom that is not overlayed by the buttons...
+                                                yOffset // +1 for rounding errors? otherwise it sometimes does show a pixel row below the bottom that is not overlayed by the buttons...
                                             )
                                         }
                                     } else Modifier
@@ -307,7 +350,8 @@ internal class BottomSheetStyle(
                                 state = state,
                                 options = options,
                                 dismissOnButtonPressed = {
-                                    onDismiss(true)
+                                    buttonPressed = true
+                                    onDismiss()
                                 },
                                 onEvent = onEvent
                             )

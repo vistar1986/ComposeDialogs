@@ -144,7 +144,7 @@ val items = listOf(
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun DialogMenu(
-    state: BaseDialogState,
+    state: DialogState,
     // Custom - Required
     items: List<MenuItem>,
     // Base Dialog - Optional

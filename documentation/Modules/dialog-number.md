@@ -68,7 +68,7 @@ if (state.visible) {
 @Composable
 fun <T : Number> DialogNumberPicker(
     // Base Dialog - State
-    state: BaseDialogState,
+    state: DialogState,
     // Custom - Required
     value: MutableState<T>,
     setup: NumberPickerSetup<T>,

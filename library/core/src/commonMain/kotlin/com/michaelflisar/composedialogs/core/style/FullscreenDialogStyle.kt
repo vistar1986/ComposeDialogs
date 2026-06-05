@@ -5,17 +5,11 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ButtonDefaults
@@ -27,28 +21,29 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
-import com.composables.core.Dialog
-import com.composables.core.DialogPanel
-import com.composables.core.DialogProperties
-import com.composables.core.rememberDialogState
+import com.composeunstyled.DialogPanel
+import com.composeunstyled.DialogProperties
+import com.composeunstyled.UnstyledDialog
 import com.michaelflisar.composedialogs.core.BaseDialogState
 import com.michaelflisar.composedialogs.core.ComposeDialogStyle
 import com.michaelflisar.composedialogs.core.DialogButtonType
 import com.michaelflisar.composedialogs.core.DialogButtons
 import com.michaelflisar.composedialogs.core.DialogEvent
 import com.michaelflisar.composedialogs.core.DialogOptions
-import com.michaelflisar.composedialogs.core.DialogState
 import com.michaelflisar.composedialogs.core.composables.ComposeDialogContent
 import com.michaelflisar.composedialogs.core.internal.ComposeDialogButton
 import com.michaelflisar.composedialogs.core.internal.ComposeDialogImageButton
@@ -57,6 +52,7 @@ import com.michaelflisar.composedialogs.core.internal.TitleTitle
 import com.michaelflisar.composedialogs.core.updateStatusbarColor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 object FullscreenDialogStyleDefaults {
 
@@ -128,8 +124,11 @@ internal class FullscreenDialogStyle(
         content: @Composable () -> Unit,
     ) {
         val coroutineScope = rememberCoroutineScope()
-        val dialogState = rememberDialogState(initiallyVisible = true)
 
+        val visible = remember { mutableStateOf(false) }
+        LaunchedEffect(Unit) {
+            visible.value = true
+        }
         val spacing = spacing()
 
         val animDurationEnter = 250
@@ -139,11 +138,11 @@ internal class FullscreenDialogStyle(
         val animExit =
             slideOutVertically(targetOffsetY = { it }) + fadeOut(tween(durationMillis = animDurationExit))
 
-        val dismiss = { dialogState.visible = false }
         var buttonPressed = false
         val waitForDismissAnimationAndUpdateState = {
             coroutineScope.launch {
-                delay(animDurationExit.toLong())
+                visible.value = false
+                delay(animDurationExit.milliseconds)
                 if (buttonPressed)
                     state.dismiss()
                 else
@@ -155,17 +154,18 @@ internal class FullscreenDialogStyle(
             derivedStateOf { dismissOnBackPress && state.interactionSource.dismissAllowed.value }
         }
 
-        Dialog(
-            state = dialogState,
+        UnstyledDialog(
+            visible = visible.value,
             properties = DialogProperties(
                 dismissOnBackPress = shouldDismissOnBackPress
             ),
-            onDismiss = {
+            onDismissRequest = {
                 waitForDismissAnimationAndUpdateState()
             }
         ) {
 
-            val statusBarColor = rememberColor(toolbarScrollBehaviour, toolbarColor, toolbarColorExpanded)
+            val statusBarColor =
+                rememberColor(toolbarScrollBehaviour, toolbarColor, toolbarColorExpanded)
             updateStatusbarColor(statusBarColor.value.luminance() < .5f)
 
             DialogPanel(
@@ -174,13 +174,6 @@ internal class FullscreenDialogStyle(
                 enter = animEnter,
                 exit = animExit
             ) {
-                val dismissOnButtonPressed = {
-                    buttonPressed = true
-                    dismiss()
-                    waitForDismissAnimationAndUpdateState()
-                    Unit
-                }
-
                 Scaffold(
                     modifier = Modifier
                         .fillMaxSize()
@@ -207,7 +200,10 @@ internal class FullscreenDialogStyle(
                             state = state,
                             options = options,
                             buttons = buttons,
-                            dismissOnButtonPressed = dismissOnButtonPressed,
+                            dismissOnButtonPressed = {
+                                buttonPressed = true
+                                waitForDismissAnimationAndUpdateState()
+                            },
                             onEvent = onEvent
                         )
                     },

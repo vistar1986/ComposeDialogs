@@ -13,6 +13,7 @@ import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.TargetedFlingBehavior
 import androidx.compose.foundation.gestures.anchoredDraggable
 import androidx.compose.foundation.gestures.snapTo
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
@@ -29,6 +30,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
@@ -40,17 +43,15 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import com.composables.core.Dialog
-import com.composables.core.DialogPanel
-import com.composables.core.DialogProperties
-import com.composables.core.Scrim
-import com.composables.core.rememberDialogState
+import com.composeunstyled.DialogPanel
+import com.composeunstyled.DialogProperties
+import com.composeunstyled.Scrim
+import com.composeunstyled.UnstyledDialog
 import com.michaelflisar.composedialogs.core.BaseDialogState
 import com.michaelflisar.composedialogs.core.ComposeDialogStyle
 import com.michaelflisar.composedialogs.core.DialogButtons
 import com.michaelflisar.composedialogs.core.DialogEvent
 import com.michaelflisar.composedialogs.core.DialogOptions
-import com.michaelflisar.composedialogs.core.DialogState
 import com.michaelflisar.composedialogs.core.StyleOptions
 import com.michaelflisar.composedialogs.core.composables.ComposeDialogButtons
 import com.michaelflisar.composedialogs.core.composables.ComposeDialogContent
@@ -59,6 +60,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.milliseconds
 
 object DialogStyleDefaults {
 
@@ -108,7 +110,11 @@ internal class DialogStyle(
         content: @Composable () -> Unit,
     ) {
         val coroutineScope = rememberCoroutineScope()
-        val dialogState = rememberDialogState(initiallyVisible = true)
+
+        val visible = remember { mutableStateOf(false) }
+        LaunchedEffect(Unit) {
+            visible.value = true
+        }
 
         val spacing = spacing()
 
@@ -119,11 +125,11 @@ internal class DialogStyle(
         val animExit =
             scaleOut(targetScale = 0.6f) + fadeOut(tween(durationMillis = animDurationExit))
 
-        val dismiss = { dialogState.visible = false }
         var buttonPressed = false
         val waitForDismissAnimationAndUpdateState = {
             coroutineScope.launch {
-                delay(animDurationExit.toLong())
+                visible.value = false
+                delay(animDurationExit.milliseconds)
                 if (buttonPressed)
                     state.dismiss()
                 else
@@ -138,26 +144,44 @@ internal class DialogStyle(
             derivedStateOf { dismissOnClickOutside && state.interactionSource.dismissAllowed.value }
         }
 
-        Dialog(
-            state = dialogState,
+        val density = LocalDensity.current
+        val scrimSize = remember { mutableStateOf(DpSize.Zero) }
+
+        UnstyledDialog(
+            visible = visible.value,
             properties = DialogProperties(
                 dismissOnBackPress = shouldDismissOnBackPress,
                 dismissOnClickOutside = shouldDismissOnClickOutside
             ),
-            onDismiss = {
+            onDismissRequest = {
                 waitForDismissAnimationAndUpdateState()
+            },
+            overlay = {
+                if (scrim) {
+                    Scrim(
+                        enter = fadeIn(),
+                        exit = fadeOut(),
+                        scrimColor = MaterialTheme.colorScheme.scrim.copy(0.3f),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .onSizeChanged {
+                                scrimSize.value =
+                                    with(density) { DpSize(it.width.toDp(), it.height.toDp()) }
+                            }
+                    )
+                }
             }
         ) {
 
             val contentSize = remember { mutableStateOf(DpSize.Zero) }
-            val scrimSize = remember { mutableStateOf(DpSize.Zero) }
+
             //val isCompact by remember {
             //    derivedStateOf {
             //        scrimSize.value.width < 600.dp
             //    }
             //}
 
-            val density = LocalDensity.current
+
             val modifierSwipeDismiss = getSwipeDismissModifier(
                 swipeDismissable = swipeDismissable,
                 maxSwipeDistance = with(density) { scrimSize.value.height.toPx() } / 2f) {
@@ -166,73 +190,62 @@ internal class DialogStyle(
                     true
                 } else false
             }
-
-            if (scrim) {
-                Scrim(
-                    enter = fadeIn(),
-                    exit = fadeOut(),
-                    scrimColor = MaterialTheme.colorScheme.scrim.copy(0.3f),
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                DialogPanel(
                     modifier = Modifier
-                        .fillMaxSize()
                         .onSizeChanged {
-                            scrimSize.value =
+                            contentSize.value =
                                 with(density) { DpSize(it.width.toDp(), it.height.toDp()) }
                         }
-                )
-            }
-
-            DialogPanel(
-                modifier = Modifier
-                    .onSizeChanged {
-                        contentSize.value =
-                            with(density) { DpSize(it.width.toDp(), it.height.toDp()) }
-                    }
-                    .systemBarsPadding()
-                    .imePadding()
-                    .padding(16.dp)
-                    .then(modifierSwipeDismiss)
-                    .shadow(6.dp /* L3 */, shape)
-                    .clip(shape)
-                    .background(containerColor)
-                    .padding(24.dp),
-                enter = animEnter,
-                exit = animExit
-            ) {
-                Column(
-                    modifier = Modifier
-                        .widthIn(min = 280.dp, max = 560.dp)
+                        .systemBarsPadding()
+                        .imePadding()
+                        .padding(16.dp)
+                        .then(modifierSwipeDismiss)
+                        .shadow(6.dp /* L3 */, shape)
+                        .clip(shape)
+                        .background(containerColor)
+                        .padding(24.dp),
+                    enter = animEnter,
+                    exit = animExit
                 ) {
+                    Column(
+                        modifier = Modifier
+                            .widthIn(min = 280.dp, max = 560.dp)
+                    ) {
 
-                    // Icon + Title
-                    ComposeDialogTitle(
-                        modifier = Modifier,
-                        title = title,
-                        icon = icon,
-                        iconColor = iconColor,
-                        titleColor = titleColor,
-                        options = this@DialogStyle.options
-                    )
+                        // Icon + Title
+                        ComposeDialogTitle(
+                            modifier = Modifier,
+                            title = title,
+                            icon = icon,
+                            iconColor = iconColor,
+                            titleColor = titleColor,
+                            options = this@DialogStyle.options
+                        )
 
-                    // Content
-                    ComposeDialogContent(
-                        content = content,
-                        contentColor = contentColor,
-                        modifier = Modifier.weight(weight = 1f, fill = false),
-                        bottomPadding = spacing.contentPadding(buttons)
-                    )
+                        // Content
+                        ComposeDialogContent(
+                            content = content,
+                            contentColor = contentColor,
+                            modifier = Modifier.weight(weight = 1f, fill = false),
+                            bottomPadding = spacing.contentPadding(buttons)
+                        )
 
-                    // Buttons
-                    ComposeDialogButtons(
-                        buttons = buttons,
-                        state = state,
-                        options = options,
-                        dismissOnButtonPressed = {
-                            buttonPressed = true
-                            dismiss()
-                            waitForDismissAnimationAndUpdateState()
-                        },
-                        onEvent = onEvent
-                    )
+                        // Buttons
+                        ComposeDialogButtons(
+                            buttons = buttons,
+                            state = state,
+                            options = options,
+                            dismissOnButtonPressed = {
+                                buttonPressed = true
+                                waitForDismissAnimationAndUpdateState()
+                            },
+                            onEvent = onEvent
+                        )
+                    }
                 }
             }
         }
@@ -307,7 +320,7 @@ private fun createDraggableState(
 
 @Composable
 private fun <T> createDraggableFlingState(
-    draggableState: AnchoredDraggableState<T>
+    draggableState: AnchoredDraggableState<T>,
 ): TargetedFlingBehavior {
 
     val positionalThreshold = { distance: Float -> distance * .5f }

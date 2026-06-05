@@ -3,7 +3,7 @@
 # --
 
 accompanist = 			    "0.37.3"
-composables =               "1.36.1"
+composables =               "2.5.0"
 
 [plugins]
 
@@ -12,4 +12,6 @@ composables =               "1.36.1"
 [libraries]
 
 drawablepainter = 		    	                { module = "com.google.accompanist:accompanist-drawablepainter", 		            version.ref = "accompanist" }
-composables-core =                              { module = "com.composables:core", 		                                            version.ref = "composables" }
+composables-dialog =                            { module = "com.composables:composeunstyled-dialog", 		                        version.ref = "composables" }
+composables-modal =                             { module = "com.composables:composeunstyled-modal", 		                        version.ref = "composables" }
+composables-modal-bottom-sheet =                { module = "com.composables:composeunstyled-modal-bottom-sheet", 		            version.ref = "composables" }

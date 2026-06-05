@@ -88,7 +88,7 @@ if (state.visible) {
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun DialogDate(
-    state: BaseDialogState,
+    state: DialogState,
     // Custom - Required
     date: MutableState<LocalDate>,
     // Custom - Optional

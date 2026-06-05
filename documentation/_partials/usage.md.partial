@@ -55,7 +55,7 @@ If you want to hold the dialog state inside a `ViewModel` or similar you can use
 
 // simple usage
 val dialog = dialogStateOf() // a state that holds no data, just visibility information
-val dialog = dialogStateOf<String?>(data = null) // a state that holds some data
+val dialog = dialogStateOf<String>(data = null) // a state that holds some data
 
 // if the state should survive process death, you can use following pattern with `SavedStateHandle`
 private val KEY = "dialog_data"

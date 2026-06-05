@@ -45,7 +45,7 @@ if (state.visible) {
  */
 @Composable
 fun DialogInfo(
-    state: BaseDialogState,
+    state: DialogState,
     // Custom - Required
     info: String,
     // Custom - Optional
