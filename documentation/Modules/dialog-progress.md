@@ -55,7 +55,7 @@ if (state.visible) {
  */
 @Composable
 fun DialogProgress(
-    state: DialogState,
+    state: BaseDialogState,
     // Custom - Required
     // ...
     // Custom - Optional

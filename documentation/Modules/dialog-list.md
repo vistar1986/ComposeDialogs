@@ -74,7 +74,7 @@ There are 2 ways to show a list, one by providing a list of items and one by pro
  */
 @Composable
 fun <T> DialogList(
-    state: DialogState,
+    state: BaseDialogState,
     // Custom - Required
     items: List<T>,
     itemIdProvider: (item: T) -> Int,
@@ -120,7 +120,7 @@ fun <T> DialogList(
  */
 @Composable
 fun <T> DialogList(
-    state: DialogState,
+    state: BaseDialogState,
     // Custom - Required
     itemsLoader: suspend () -> List<T>,
     itemIdProvider: (item: T) -> Int,
