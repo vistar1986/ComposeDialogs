@@ -2,7 +2,6 @@ package com.michaelflisar.composedialogs.core
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
@@ -38,9 +37,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
    - Bundle
  */
 
-
 /**
- * returns a [DialogStateWithData] object holding all necessary states for the dialog
+ * returns a [DialogState] object holding all necessary states for the dialog
  *
  * Consider using [rememberDialogState(showing: Boolean, ...)] if you do not need any data for this dialog
  *
@@ -58,19 +56,17 @@ fun <T : Any> rememberDialogState(
     buttonPositiveEnabled: Boolean = true,
     buttonNegativeEnabled: Boolean = true,
     dismissAllowed: Boolean = true,
-    swipeAllowed: Boolean = true
-): DialogStateWithData<T> {
+    swipeAllowed: Boolean = true,
+): DialogState<T> {
 
     // extra data - should survice screen rotations and activity recreates BUT must be reset if dialog is dismissed
     val state = rememberSaveable(saver = saver) { mutableStateOf(data) }
 
     // showing should survive, even screen rotations and activity recreations
-    val showing = remember(state.value) {
-        derivedStateOf { state.value != null }
-    }
+    val showing = state.value != null
 
     // interaction state should be reset whenever the dialog is reshown
-    val interaction = remember(showing.value) {
+    val interaction = remember(showing) {
         mutableStateOf(
             DialogInteractionSource(
                 buttonPositiveEnabled = mutableStateOf(buttonPositiveEnabled),
@@ -81,7 +77,10 @@ fun <T : Any> rememberDialogState(
         )
     }
 
-    return DialogStateWithData(showing, state, interaction)
+
+    return remember {
+        DialogState(state, noData = false, interaction)
+    }
 }
 
 // ------------------------
@@ -89,7 +88,7 @@ fun <T : Any> rememberDialogState(
 // ------------------------
 
 /**
- * returns a [DialogStateNoData] object holding all necessary states for the dialog
+ * returns a [DialogState] object holding all necessary states for the dialog
  *
  * Consider using [rememberDialogState] with the data field overload if you do need some data inside the dialog if it is shown
  *
@@ -105,14 +104,19 @@ fun rememberDialogState(
     buttonPositiveEnabled: Boolean = true,
     buttonNegativeEnabled: Boolean = true,
     dismissAllowed: Boolean = true,
-    swipeAllowed: Boolean = true
-): DialogStateNoData {
+    swipeAllowed: Boolean = true,
+): DialogState<Boolean> {
+
+    val initialData = if (visible) true else null
+
+    // extra data - should survice screen rotations and activity recreates BUT must be reset if dialog is dismissed
+    val state = rememberSaveable(saver = autoSaver()) { mutableStateOf(initialData) }
 
     // showing should survive, even screen rotations and activity recreations
-    val visible = rememberSaveable { mutableStateOf(visible) }
+    val showing = state.value != null
 
     // interaction state should be reset whenever the dialog is reshown
-    val interaction = remember(visible.value) {
+    val interaction = remember(showing) {
         mutableStateOf(
             DialogInteractionSource(
                 buttonPositiveEnabled = mutableStateOf(buttonPositiveEnabled),
@@ -122,5 +126,93 @@ fun rememberDialogState(
             )
         )
     }
-    return DialogStateNoData(visible, interaction)
+
+
+    return remember {
+        DialogState(state, noData = true, interaction)
+    }
+}
+
+// ------------------------
+// dialogStateOf overloads for ViewModels
+// ------------------------
+
+/**
+ * creates a [DialogState] object for usage outside of Compose (e.g. ViewModel)
+ *
+ * NOTE:
+ * - no automatic state saving (no rememberSaveable)
+ * - interaction state will be reset whenever the dialog is shown again
+ */
+fun <T : Any> dialogStateOf(
+    data: T?,
+    buttonPositiveEnabled: Boolean = true,
+    buttonNegativeEnabled: Boolean = true,
+    dismissAllowed: Boolean = true,
+    swipeAllowed: Boolean = true,
+    onStateChanged: ((T?) -> Unit)? = null,
+): DialogState<T> {
+
+    val state = mutableStateOf(data)
+
+    fun createInteraction() = mutableStateOf(
+        DialogInteractionSource(
+            buttonPositiveEnabled = mutableStateOf(buttonPositiveEnabled),
+            buttonNegativeEnabled = mutableStateOf(buttonNegativeEnabled),
+            dismissAllowed = mutableStateOf(dismissAllowed),
+            swipeAllowed = mutableStateOf(swipeAllowed)
+        )
+    )
+
+    val interactionState = createInteraction()
+
+    return DialogState(
+        state = state,
+        noData = false,
+        interactionSource = interactionState,
+        onBeforeShow = { interactionState.value = createInteraction().value },
+        onShow = { onStateChanged?.invoke(it) },
+        onDismiss = { onStateChanged?.invoke(null) }
+    )
+}
+
+/**
+ * creates a [DialogState] object for usage outside of Compose (e.g. ViewModel)
+ *
+ * NOTE:
+ * - no automatic state saving (no rememberSaveable)
+ * - interaction state will be reset whenever the dialog is shown again
+ */
+fun dialogStateOf(
+    visible: Boolean = false,
+    buttonPositiveEnabled: Boolean = true,
+    buttonNegativeEnabled: Boolean = true,
+    dismissAllowed: Boolean = true,
+    swipeAllowed: Boolean = true,
+    onStateChanged: ((Boolean?) -> Unit)? = null,
+): DialogState<Boolean> {
+
+    val initialData = if (visible) true else null
+
+    val state = mutableStateOf(initialData)
+
+    fun createInteraction() = mutableStateOf(
+        DialogInteractionSource(
+            buttonPositiveEnabled = mutableStateOf(buttonPositiveEnabled),
+            buttonNegativeEnabled = mutableStateOf(buttonNegativeEnabled),
+            dismissAllowed = mutableStateOf(dismissAllowed),
+            swipeAllowed = mutableStateOf(swipeAllowed)
+        )
+    )
+
+    val interactionState = createInteraction()
+
+    return DialogState(
+        state = state,
+        noData = false,
+        interactionSource = interactionState,
+        onBeforeShow = { interactionState.value = createInteraction().value },
+        onShow = { onStateChanged?.invoke(it) },
+        onDismiss = { onStateChanged?.invoke(null) }
+    )
 }

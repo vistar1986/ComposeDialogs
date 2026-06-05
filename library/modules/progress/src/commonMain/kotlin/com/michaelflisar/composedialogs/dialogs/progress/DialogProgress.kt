@@ -15,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.michaelflisar.composedialogs.core.BaseDialogState
 import com.michaelflisar.composedialogs.core.DialogState
 import com.michaelflisar.composedialogs.core.Dialog
 import com.michaelflisar.composedialogs.core.DialogButtons
@@ -37,7 +38,7 @@ import com.michaelflisar.composedialogs.core.DialogOptions
  */
 @Composable
 fun DialogProgress(
-    state: DialogState,
+    state: BaseDialogState,
     // Custom - Required
     // ...
     // Custom - Optional

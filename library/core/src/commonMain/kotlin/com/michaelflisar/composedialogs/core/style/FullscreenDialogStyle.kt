@@ -42,6 +42,7 @@ import com.composables.core.Dialog
 import com.composables.core.DialogPanel
 import com.composables.core.DialogProperties
 import com.composables.core.rememberDialogState
+import com.michaelflisar.composedialogs.core.BaseDialogState
 import com.michaelflisar.composedialogs.core.ComposeDialogStyle
 import com.michaelflisar.composedialogs.core.DialogButtonType
 import com.michaelflisar.composedialogs.core.DialogButtons
@@ -122,7 +123,7 @@ internal class FullscreenDialogStyle(
         icon: @Composable (() -> Unit)?,
         buttons: DialogButtons,
         options: DialogOptions,
-        state: DialogState,
+        state: BaseDialogState,
         onEvent: (event: DialogEvent) -> Unit,
         content: @Composable () -> Unit,
     ) {
@@ -261,7 +262,7 @@ private fun Toolbar(
     scrollBehavior: TopAppBarScrollBehavior?,
     navigationIcon: @Composable (() -> Unit)?,
     menuActions: @Composable (RowScope.() -> Unit)?,
-    state: DialogState,
+    state: BaseDialogState,
     options: DialogOptions,
     buttons: DialogButtons,
     dismissOnButtonPressed: () -> Unit,

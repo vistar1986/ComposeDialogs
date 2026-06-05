@@ -44,7 +44,7 @@ import com.michaelflisar.composedialogs.core.*
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun DialogMenu(
-    state: DialogState,
+    state: BaseDialogState,
     // Custom - Required
     items: List<MenuItem>,
     // Base Dialog - Optional

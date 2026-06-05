@@ -5,6 +5,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import com.michaelflisar.composedialogs.core.BaseDialogState
 import com.michaelflisar.composedialogs.core.DialogState
 import com.michaelflisar.composedialogs.core.DialogButton
 import com.michaelflisar.composedialogs.core.DialogButtonType
@@ -15,7 +16,7 @@ import com.michaelflisar.composedialogs.core.DialogOptions
 internal fun ComposeDialogButton(
     button: DialogButton,
     buttonType: DialogButtonType,
-    state: DialogState,
+    state: BaseDialogState,
     options: DialogOptions,
     colors: ButtonColors = ButtonDefaults.textButtonColors(),
     dismissOnButtonPressed: () -> Unit,

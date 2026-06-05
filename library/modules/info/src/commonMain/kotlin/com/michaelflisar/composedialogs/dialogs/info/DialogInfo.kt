@@ -24,7 +24,7 @@ import com.michaelflisar.composedialogs.core.ComposeDialogStyle
  */
 @Composable
 fun DialogInfo(
-    state: DialogState,
+    state: BaseDialogState,
     // Custom - Required
     info: String,
     // Custom - Optional

@@ -11,6 +11,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
+import com.michaelflisar.composedialogs.core.BaseDialogState
 import com.michaelflisar.composedialogs.core.DialogState
 import com.michaelflisar.composedialogs.core.Dialog
 import com.michaelflisar.composedialogs.core.DialogButtonType
@@ -50,7 +51,7 @@ import com.michaelflisar.composedialogs.dialogs.input.composables.DialogInputTex
 @Composable
 fun <T : Number> DialogInputNumber(
     // Base Dialog - State
-    state: DialogState,
+    state: BaseDialogState,
     // Custom - Required
     value: MutableState<T>,
     label: String = "",

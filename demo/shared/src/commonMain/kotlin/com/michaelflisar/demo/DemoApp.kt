@@ -88,7 +88,7 @@ private fun DemoContent(
         )
 
         DemoStyle.Fullscreen -> DialogDefaults.styleFullscreenDialog(
-            //toolbarScrollBehaviour = TopAppBarDefaults.enterAlwaysScrollBehavior(),
+            toolbarScrollBehaviour = TopAppBarDefaults.enterAlwaysScrollBehavior(),
             //navigationIcon = null
         )
 
@@ -136,7 +136,12 @@ private fun DemoContent(
     val selectedDemo = rememberSelectedDemo()
     val collapsibleRegion = rememberDemoExpandedRegions(ids = listOf(1, 2), single = false)
     DemoColumn(
-        modifier = modifier.verticalScroll(rememberScrollState())
+        modifier = modifier
+            .then(if (selectedDemo.intValue == -1)
+                Modifier.verticalScroll(rememberScrollState())
+            else
+                Modifier
+            )
     ) {
         if (selectedDemo.intValue == -1) {
             // LEVEL 0 - settings + demo list

@@ -19,6 +19,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.michaelflisar.composedialogs.core.BaseDialogState
 import com.michaelflisar.composedialogs.core.ComposeDialogStyle
 import com.michaelflisar.composedialogs.core.Dialog
 import com.michaelflisar.composedialogs.core.DialogButtons
@@ -53,7 +54,7 @@ import kotlinx.datetime.Month
  */
 @Composable
 fun DialogFrequency(
-    state: DialogState,
+    state: BaseDialogState,
     // Custom - Required
     frequency: MutableState<Frequency>,
     // Custom - Optional

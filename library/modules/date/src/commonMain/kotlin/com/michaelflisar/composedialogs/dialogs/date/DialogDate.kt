@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.michaelflisar.composedialogs.core.BaseDialogState
 import com.michaelflisar.composedialogs.core.DialogState
 import com.michaelflisar.composedialogs.core.Dialog
 import com.michaelflisar.composedialogs.core.DialogButtons
@@ -73,7 +74,7 @@ import org.jetbrains.compose.resources.stringResource
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun DialogDate(
-    state: DialogState,
+    state: BaseDialogState,
     // Custom - Required
     date: MutableState<LocalDate>,
     // Custom - Optional

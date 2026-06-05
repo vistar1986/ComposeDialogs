@@ -37,7 +37,7 @@ import com.michaelflisar.composedialogs.core.style.FullscreenDialogStyleDefaults
  */
 @Composable
 fun Dialog(
-    state: DialogState,
+    state: BaseDialogState,
     title: (@Composable () -> Unit)? = null,
     icon: (@Composable () -> Unit)? = null,
     style: ComposeDialogStyle = DialogDefaults.defaultDialogStyle(),
@@ -361,7 +361,7 @@ class DialogInteractionSource internal constructor(
 /**
  * a dialog state holding the current showing state and the some additional state [DialogInteractionSource] of the dialog
  */
-abstract class DialogState {
+abstract class BaseDialogState {
 
     /**
      * the showing state of the dialog
@@ -404,7 +404,7 @@ abstract class DialogState {
     }
 
     /**
-     * this will determine if a button currently can be pressed (depends on the [interactionSource] ([DialogInteractionSource.buttonPositiveEnabled] or [DialogInteractionSource.buttonNegativeEnabled]))
+     * this will determine if a button currently can be pressed
      */
     fun isButtonEnabled(button: DialogButtonType): Boolean {
         return when (button) {
@@ -414,10 +414,7 @@ abstract class DialogState {
     }
 
     /**
-     * this will enable or disable a button
-     *
-     * @param button the [DialogButtonType] that should be enabled/disabled
-     * @param enabled if true, the button will be enabled
+     * enable or disable a button
      */
     fun enableButton(
         button: DialogButtonType,
@@ -430,9 +427,7 @@ abstract class DialogState {
     }
 
     /**
-     * this will make the dialog dismissable or not
-     *
-     * @param enabled if true, the dialog can be dismissed
+     * make dialog dismissable or not
      */
     fun dismissable(enabled: Boolean) {
         interactionSource.dismissAllowed.value = enabled
@@ -440,58 +435,48 @@ abstract class DialogState {
 }
 
 /**
- * a dialog state holding the current showing state and the some additional state [DialogInteractionSource] of the dialog
- *
- * @param state the visibility state of the dialog
- * @param interactionSource the [DialogInteractionSource] holding other states for this dialog
- */
-class DialogStateNoData(
-    private val state: MutableState<Boolean>,
-    interactionSource: MutableState<DialogInteractionSource>
-) : DialogState() {
-
-    override val visible by state
-    override val interactionSource by interactionSource
-
-    override fun onDismiss() {
-        state.value = false
-    }
-
-    /**
-     * this will show this dialog
-     */
-    fun show() {
-        state.value = true
-    }
-
-}
-
-/**
  * a dialog state holding the current state and the some additional state [DialogInteractionSource] of the dialog
  *
- * @param visible the visibility state of the dialog - must be derived from the state!
  * @param state the state of the dialog - if not null, the dialog is visible, otherwise not
  * @param interactionSource the [DialogInteractionSource] holding other states for this dialog
  */
-class DialogStateWithData<T>(
-    visible: State<Boolean>,
+class DialogState<T> internal constructor(
     private val state: MutableState<T?>,
+    private val noData: Boolean,
     interactionSource: MutableState<DialogInteractionSource>,
-) : DialogState() {
+    private val onBeforeShow: ((data: T) -> Unit)? = null,
+    private val onShow: ((data: T) -> Unit)? = null,
+    private val onDismiss: (() -> Unit)? = null
+) : BaseDialogState() {
 
-    override val visible by visible
+    override val visible: Boolean
+        get() = state.value != null
+
     override val interactionSource by interactionSource
 
     override fun onDismiss() {
         state.value = null
+        onDismiss?.invoke()
     }
 
     /**
      * this will show this dialog
      */
     fun show(data: T) {
+        onBeforeShow?.invoke(data)
         state.value = data
+        onShow?.invoke(data)
     }
+
+    /**
+     * convenience for Unit dialogs
+     */
+    fun show() {
+        check(noData) { "show() only valid for DialogState<Boolean>" }
+        @Suppress("UNCHECKED_CAST")
+        show(true as T)
+    }
+
 
     /**
      * this will return the currently holded data
@@ -500,12 +485,9 @@ class DialogStateWithData<T>(
         get() = state.value
 
     /**
-     * this will return the currently holded data
-     *
-     * should only be called if the dialog is shown because of a forcefully cast to a non null value!
+     * should only be called if dialog is shown
      */
     fun requireData() = state.value!!
-
 }
 
 /**

@@ -42,6 +42,7 @@ import com.michaelflisar.composedialogs.dialogs.color.composables.TitleForPages
 import com.michaelflisar.composedialogs.color.resources.Res
 import com.michaelflisar.composedialogs.color.resources.composedialogs_color_label_custom
 import com.michaelflisar.composedialogs.color.resources.composedialogs_color_label_presets
+import com.michaelflisar.composedialogs.core.BaseDialogState
 import org.jetbrains.compose.resources.stringResource
 
 // begin-snippet: DialogColor::constructor
@@ -64,7 +65,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun DialogColor(
     // Base Dialog - State
-    state: DialogState,
+    state: BaseDialogState,
     // Custom - Required
     color: MutableState<Color>,
     // Custom - Optional
