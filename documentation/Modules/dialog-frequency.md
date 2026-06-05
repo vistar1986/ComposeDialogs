@@ -44,7 +44,7 @@ if (state.visible) {
  */
 @Composable
 fun DialogFrequency(
-    state: DialogState,
+    state: BaseDialogState,
     // Custom - Required
     frequency: MutableState<Frequency>,
     // Custom - Optional

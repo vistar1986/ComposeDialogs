@@ -107,8 +107,8 @@ This library offers you an easily extendible compose framework for modal dialogs
 
 | Dependency | Version |
 |---|---|
-| Kotlin | `2.3.20` |
-| Jetbrains Compose | `1.10.3` |
+| Kotlin | `2.4.0` |
+| Jetbrains Compose | `1.11.1` |
 | Jetbrains Compose Material3 | `1.9.0` |
 
 > :warning: Following experimental annotations are used:
@@ -241,6 +241,24 @@ LazyColumn {
         }
     }
 }
+```
+
+#### ViewModel / usage outside of composable
+
+If you want to hold the dialog state inside a `ViewModel` or similar you can use the `dialogStateOf` functions.
+
+```kotlin
+
+// simple usage
+val dialog = dialogStateOf() // a state that holds no data, just visibility information
+val dialog = dialogStateOf<String>(data = null) // a state that holds some data
+
+// if the state should survive process death, you can use following pattern with `SavedStateHandle`
+private val KEY = "dialog_data"
+val dialog = dialogStateOf(
+	data = savedStateHandle.get<String?>(KEY),
+	onStateChanged = { savedStateHandle[KEY] = it }
+)
 ```
 
 #### Styling/Customisation and events
