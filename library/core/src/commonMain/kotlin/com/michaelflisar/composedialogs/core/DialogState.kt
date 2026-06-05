@@ -105,9 +105,9 @@ fun rememberDialogState(
     buttonNegativeEnabled: Boolean = true,
     dismissAllowed: Boolean = true,
     swipeAllowed: Boolean = true,
-): DialogState<Boolean> {
+): DialogStateNoData {
 
-    val initialData = if (visible) true else null
+    val initialData = if (visible) Unit else null
 
     // extra data - should survice screen rotations and activity recreates BUT must be reset if dialog is dismissed
     val state = rememberSaveable(saver = autoSaver()) { mutableStateOf(initialData) }
@@ -189,10 +189,10 @@ fun dialogStateOf(
     buttonNegativeEnabled: Boolean = true,
     dismissAllowed: Boolean = true,
     swipeAllowed: Boolean = true,
-    onStateChanged: ((Boolean?) -> Unit)? = null,
-): DialogState<Boolean> {
+    onStateChanged: ((Unit?) -> Unit)? = null,
+): DialogStateNoData {
 
-    val initialData = if (visible) true else null
+    val initialData = if (visible) Unit else null
 
     val state = mutableStateOf(initialData)
 

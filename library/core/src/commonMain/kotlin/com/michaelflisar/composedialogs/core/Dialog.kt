@@ -480,11 +480,13 @@ class DialogState<T> internal constructor(
     fun requireData() = state.value!!
 }
 
+typealias DialogStateNoData = DialogState<Unit>
+
 /**
  * convenience for no data dialogs (internal state is a boolean, but the overload does not require a data parameter)
  */
-fun DialogState<Boolean>.show() {
-    show(true)
+fun DialogStateNoData.show() {
+    show(Unit)
 }
 
 /**
