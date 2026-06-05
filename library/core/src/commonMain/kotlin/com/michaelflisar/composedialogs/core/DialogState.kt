@@ -79,7 +79,7 @@ fun <T : Any> rememberDialogState(
 
 
     return remember {
-        DialogState(state, noData = false, interaction)
+        DialogState(state, interaction)
     }
 }
 
@@ -129,7 +129,7 @@ fun rememberDialogState(
 
 
     return remember {
-        DialogState(state, noData = true, interaction)
+        DialogStateNoData(state, interaction)
     }
 }
 
@@ -168,7 +168,6 @@ fun <T : Any> dialogStateOf(
 
     return DialogState(
         state = state,
-        noData = false,
         interactionSource = interactionState,
         onBeforeShow = { interactionState.value = createInteraction().value },
         onShow = { onStateChanged?.invoke(it) },
@@ -207,9 +206,8 @@ fun dialogStateOf(
 
     val interactionState = createInteraction()
 
-    return DialogState(
+    return DialogStateNoData(
         state = state,
-        noData = false,
         interactionSource = interactionState,
         onBeforeShow = { interactionState.value = createInteraction().value },
         onShow = { onStateChanged?.invoke(it) },

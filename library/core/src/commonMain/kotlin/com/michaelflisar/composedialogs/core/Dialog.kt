@@ -439,10 +439,12 @@ abstract class BaseDialogState {
  *
  * @param state the state of the dialog - if not null, the dialog is visible, otherwise not
  * @param interactionSource the [DialogInteractionSource] holding other states for this dialog
+ * @param onBeforeShow the callback that will be called before showing this dialog, providing the data that will be shown in this dialog
+ * @param onShow the callback that will be called when this dialog is shown, providing the data that is shown in this dialog
+ * @param onDismiss the callback that will be called when this dialog is dismissed
  */
-class DialogState<T> internal constructor(
+private class DialogStateImpl<T>(
     private val state: MutableState<T?>,
-    private val noData: Boolean,
     interactionSource: MutableState<DialogInteractionSource>,
     private val onBeforeShow: ((data: T) -> Unit)? = null,
     private val onShow: ((data: T) -> Unit)? = null,
@@ -480,13 +482,53 @@ class DialogState<T> internal constructor(
     fun requireData() = state.value!!
 }
 
-typealias DialogStateNoData = DialogState<Unit>
+/**
+ * a dialog state holding the current state and the some additional state [DialogInteractionSource] of the dialog
+ *
+ * @param state the state of the dialog - if not null, the dialog is visible, otherwise not
+ * @param interactionSource the [DialogInteractionSource] holding other states for this dialog
+ * @param onBeforeShow the callback that will be called before showing this dialog, providing the data that will be shown in this dialog
+ * @param onShow the callback that will be called when this dialog is shown, providing the data that is shown in this dialog
+ * @param onDismiss the callback that will be called when this dialog is dismissed
+ */
+class DialogState<T> internal constructor(
+    // Parameter bleiben internal, Instanzen werden intern erzeugt
+    state: MutableState<T?>,
+    interactionSource: MutableState<DialogInteractionSource>,
+    onBeforeShow: ((data: T) -> Unit)? = null,
+    onShow: ((data: T) -> Unit)? = null,
+    onDismiss: (() -> Unit)? = null
+) : BaseDialogState() {
+
+    private val impl = DialogStateImpl(state, interactionSource, onBeforeShow, onShow, onDismiss)
+
+    override val visible: Boolean get() = impl.visible
+    override val interactionSource get() = impl.interactionSource
+    override fun onDismiss() = impl.onDismiss()
+
+    fun show(data: T) = impl.show(data)
+    val data: T? get() = impl.data
+    fun requireData() = impl.requireData()
+}
 
 /**
- * convenience for no data dialogs (internal state is a boolean, but the overload does not require a data parameter)
+ * convenience type alias for no data dialogs (internal state is Unit, but the overload does not require a data parameter)
  */
-fun DialogStateNoData.show() {
-    show(Unit)
+class DialogStateNoData internal constructor(
+    state: MutableState<Unit?>,
+    interactionSource: MutableState<DialogInteractionSource>,
+    onBeforeShow: ((data: Unit) -> Unit)? = null,
+    onShow: ((data: Unit) -> Unit)? = null,
+    onDismiss: (() -> Unit)? = null
+) : BaseDialogState() {
+
+    private val impl = DialogStateImpl(state, interactionSource, onBeforeShow, onShow, onDismiss)
+
+    override val visible: Boolean get() = impl.visible
+    override val interactionSource get() = impl.interactionSource
+    override fun onDismiss() = impl.onDismiss()
+
+    fun show() = impl.show(Unit)
 }
 
 /**
