@@ -10,11 +10,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import com.michaelflisar.composedialogs.core.ComposeDialogStyle
 import com.michaelflisar.composedialogs.core.DialogDefaults
 import com.michaelflisar.composedialogs.demo.BuildKonfig
 import com.michaelflisar.demo.classes.DemoStyle
@@ -44,7 +46,7 @@ import com.michaelflisar.democomposables.layout.rememberDemoExpandedRegions
 @Composable
 fun DemoApp() {
     MaterialTheme(
-        colorScheme = darkColorScheme()
+        colorScheme = lightColorScheme()// darkColorScheme()
     ) {
         DemoScaffold(
             appName = BuildKonfig.appName
@@ -93,7 +95,7 @@ private fun DemoContent(
         )
 
         DemoStyle.BottomSheet -> DialogDefaults.styleBottomSheet(
-            dragHandle = true,
+            dragHandle = false,
             animateShow = true
             // ...
         )
@@ -136,12 +138,7 @@ private fun DemoContent(
     val selectedDemo = rememberSelectedDemo()
     val collapsibleRegion = rememberDemoExpandedRegions(ids = listOf(1, 2), single = false)
     DemoColumn(
-        modifier = modifier
-            .then(if (selectedDemo.intValue == -1)
-                Modifier.verticalScroll(rememberScrollState())
-            else
-                Modifier
-            )
+        modifier = modifier.verticalScroll(rememberScrollState())
     ) {
         if (selectedDemo.intValue == -1) {
             // LEVEL 0 - settings + demo list

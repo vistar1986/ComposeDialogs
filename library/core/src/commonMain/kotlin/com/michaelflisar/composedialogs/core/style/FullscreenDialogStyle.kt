@@ -30,7 +30,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -113,6 +115,7 @@ internal class FullscreenDialogStyle(
 
     override val type = ComposeDialogStyle.Type.Dialog
 
+    @OptIn(ExperimentalComposeUiApi::class)
     @Composable
     override fun Show(
         title: (@Composable () -> Unit)?,
@@ -163,6 +166,11 @@ internal class FullscreenDialogStyle(
                 waitForDismissAnimationAndUpdateState()
             }
         ) {
+
+            BackHandler(enabled = shouldDismissOnBackPress) {
+                println("BackHandler: shouldDismissOnBackPress=$shouldDismissOnBackPress, state.interactionSource.dismissAllowed=${state.interactionSource.dismissAllowed.value}")
+                waitForDismissAnimationAndUpdateState()
+            }
 
             val statusBarColor =
                 rememberColor(toolbarScrollBehaviour, toolbarColor, toolbarColorExpanded)

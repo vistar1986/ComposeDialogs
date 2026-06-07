@@ -32,7 +32,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
@@ -99,6 +101,7 @@ internal class DialogStyle(
 
     override val type = ComposeDialogStyle.Type.Dialog
 
+    @OptIn(ExperimentalComposeUiApi::class)
     @Composable
     override fun Show(
         title: (@Composable () -> Unit)?,
@@ -173,6 +176,12 @@ internal class DialogStyle(
             }
         ) {
 
+            // Hack: UnstyledDialog internal back handling does not work in some cases on back button press on android
+            BackHandler(enabled = shouldDismissOnBackPress) {
+                println("BackHandler: shouldDismissOnBackPress=$shouldDismissOnBackPress, state.interactionSource.dismissAllowed=${state.interactionSource.dismissAllowed.value}")
+                waitForDismissAnimationAndUpdateState()
+            }
+
             val contentSize = remember { mutableStateOf(DpSize.Zero) }
 
             //val isCompact by remember {
@@ -190,6 +199,7 @@ internal class DialogStyle(
                     true
                 } else false
             }
+
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,

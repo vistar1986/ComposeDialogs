@@ -5,9 +5,11 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.TextFields
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
@@ -24,6 +26,7 @@ import com.michaelflisar.composedialogs.core.DialogButtonType
 import com.michaelflisar.composedialogs.core.DialogEvent
 import com.michaelflisar.composedialogs.core.rememberDialogState
 import com.michaelflisar.composedialogs.dialogs.list.DialogList
+import com.michaelflisar.composedialogs.dialogs.list.DialogListDefaults
 import com.michaelflisar.democomposables.DemoButton
 import com.michaelflisar.democomposables.layout.DemoRegion
 import com.michaelflisar.democomposables.layout.DemoRow
@@ -38,18 +41,19 @@ fun ListDemos(
 
     val simpleItems = (1..500).toList()
 
+
     // Item Content Renderer - Simple Version where you can provide simple strings for text/supporting text/trailing text and an icon composable
-    val itemContentsSimple = DialogList.ItemDefaultContent<Int>(
-        text = { "Item $it" }
+    val itemContentsSimple = DialogListDefaults.itemContent<Int>(
+        text = { Text("Item $it", maxLines = 2) },
     )
-    val itemContentsSimpleWithIcon = DialogList.ItemDefaultContent<Int>(
-        text = { "Item $it" },
+    val itemContentsSimpleWithIcon = DialogListDefaults.itemContent<Int>(
+        text = { Text("Item $it", maxLines = 2) },
         icon = { Icon(imageVector = Icons.Default.Home, contentDescription = null) }
     )
-    val itemContentsSimpleWithIconAndTrailingInfo = DialogList.ItemDefaultContent<Int>(
-        text = { "Item $it" },
+    val itemContentsSimpleWithIconAndTrailingInfo = DialogListDefaults.itemContent<Int>(
+        text = { Text("Item $it", maxLines = 2) },
         icon = { Icon(imageVector = Icons.Default.Home, contentDescription = null) },
-        trailingSupportingText = { "Supporting Text $it..." }
+        trailingText = { Text("Supporting Text $it...", maxLines = 2) }
     )
 
     val simpleItemIdProvider = { item: Int -> item }
@@ -58,42 +62,42 @@ fun ListDemos(
     val selectedMulti = rememberSaveable { mutableStateOf<List<Int>>(emptyList()) }
     DemoRow {
         DemoList(
-            style,
-            icon,
-            showInfo,
-            itemContents = itemContentsSimple,
-            itemIdProvider = simpleItemIdProvider,
+            style = style,
+            icon = icon,
+            showInfo = showInfo,
+            content = itemContentsSimple,
+            key = simpleItemIdProvider,
             items = simpleItems,
             selectionMode = DialogList.SelectionMode.SingleSelect(selectedSingle)
         )
         DemoList(
-            style,
-            icon,
-            showInfo,
-            itemContents = itemContentsSimple,
-            itemIdProvider = simpleItemIdProvider,
+            style = style,
+            icon = icon,
+            showInfo = showInfo,
+            content = itemContentsSimple,
+            key = simpleItemIdProvider,
             items = simpleItems,
             selectionMode = DialogList.SelectionMode.MultiSelect(selectedMulti)
         )
     }
     DemoRow {
         DemoList(
-            style,
-            icon,
-            showInfo,
-            itemContents = itemContentsSimple,
-            itemIdProvider = simpleItemIdProvider,
+            style = style,
+            icon = icon,
+            showInfo = showInfo,
+            content = itemContentsSimple,
+            key = simpleItemIdProvider,
             items = simpleItems,
             selectionMode = DialogList.SelectionMode.SingleClickAndClose {
                 showInfo("Selected in Single Click Mode: $it")
             }
         )
         DemoList(
-            style,
-            icon,
-            showInfo,
-            itemContents = itemContentsSimple,
-            itemIdProvider = simpleItemIdProvider,
+            style = style,
+            icon = icon,
+            showInfo = showInfo,
+            content = itemContentsSimple,
+            key = simpleItemIdProvider,
             items = simpleItems,
             selectionMode = DialogList.SelectionMode.MultiClick {
                 showInfo("Selected in Multi Click Mode: $it")
@@ -103,40 +107,44 @@ fun ListDemos(
     DemoRegion("List Dialogs (Other Options)")
     DemoRow {
         DemoList(
-            style,
-            icon,
-            showInfo,
-            itemContents = itemContentsSimpleWithIcon,
-            itemIdProvider = simpleItemIdProvider,
+            style = style,
+            icon = icon,
+            showInfo = showInfo,
+            content = itemContentsSimpleWithIcon,
+            key = simpleItemIdProvider,
             items = simpleItems,
             selectionMode = DialogList.SelectionMode.MultiSelect(
                 selectedMulti,
                 selectOnCheckboxClickOnly = false
             ),
-            divider = true,
+            divider = {
+                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+            },
             infos = "Divider + Icons + Click On Row Support"
         )
         DemoList(
-            style,
-            icon,
-            showInfo,
-            itemContents = itemContentsSimpleWithIcon,
-            itemIdProvider = simpleItemIdProvider,
+            style = style,
+            icon = icon,
+            showInfo = showInfo,
+            content = itemContentsSimpleWithIcon,
+            key = simpleItemIdProvider,
             items = simpleItems,
             selectionMode = DialogList.SelectionMode.MultiClick {
                 showInfo("Selected in Multi Click Mode: $it")
             },
-            divider = true,
+            divider = {
+                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+            },
             infos = "Divider + Icons"
         )
     }
     DemoRow {
         DemoList(
-            style,
-            icon,
-            showInfo,
-            itemContents = itemContentsSimpleWithIconAndTrailingInfo,
-            itemIdProvider = simpleItemIdProvider,
+            style = style,
+            icon = icon,
+            showInfo = showInfo,
+            content = itemContentsSimpleWithIconAndTrailingInfo,
+            key = simpleItemIdProvider,
             items = simpleItems,
             selectionMode = DialogList.SelectionMode.MultiClick {
                 showInfo("Selected in Multi Click Mode: $it")
@@ -144,14 +152,14 @@ fun ListDemos(
             infos = "Trailing Text"
         )
         DemoList(
-            style,
-            icon,
-            showInfo,
-            itemContents = itemContentsSimpleWithIconAndTrailingInfo,
-            itemIdProvider = simpleItemIdProvider,
+            style = style,
+            icon = icon,
+            showInfo = showInfo,
+            content = itemContentsSimpleWithIconAndTrailingInfo,
+            key = simpleItemIdProvider,
             items = simpleItems,
             selectionMode = DialogList.SelectionMode.MultiSelect(
-                selectedMulti,
+                selected = selectedMulti,
                 showSelectionCounter = true,
                 selectOnCheckboxClickOnly = false
             ),
@@ -162,14 +170,14 @@ fun ListDemos(
 
     DemoRow {
         DemoList(
-            style,
-            icon,
-            showInfo,
-            itemContents = itemContentsSimpleWithIcon,
-            itemIdProvider = simpleItemIdProvider,
+            style = style,
+            icon = icon,
+            showInfo = showInfo,
+            content = itemContentsSimpleWithIcon,
+            key = simpleItemIdProvider,
             items = simpleItems,
             selectionMode = DialogList.SelectionMode.MultiSelect(
-                selectedMulti,
+                selected = selectedMulti,
                 showSelectionCounter = true,
                 selectOnCheckboxClickOnly = false
             ),
@@ -203,14 +211,14 @@ fun <T> RowScope.DemoList(
     style: ComposeDialogStyle,
     icon: (@Composable () -> Unit)?,
     showInfo: (info: String) -> Unit,
-    itemContents: DialogList.ItemContents<T>,
-    itemIdProvider: (item: T) -> Int,
+    key: (item: T) -> Int,
+    content: @Composable (item: T, context: DialogList.ItemContext) -> Unit,
     items: List<T>? = null,
     itemsLoader: (suspend () -> List<T>)? = null,
     itemSaver: Saver<MutableState<List<T>>, out Any>? = null,
     selectionMode: DialogList.SelectionMode<T>,
     filter: DialogList.Filter<T>? = null,
-    divider: Boolean = false,
+    divider: @Composable (() -> Unit)?  = null,
     infos: String = "",
     description: String = "",
 ) {
@@ -247,8 +255,8 @@ fun <T> RowScope.DemoList(
                 state = state,
                 title = { Text("List Dialog") },
                 items = items,
-                itemIdProvider = itemIdProvider,
-                itemContents = itemContents,
+                key = key,
+                content = content,
                 selectionMode = selectionMode,
                 filter = filter,
                 divider = divider,
@@ -271,10 +279,10 @@ fun <T> RowScope.DemoList(
                         LinearProgressIndicator()
                     }
                 },
-                itemsLoader = itemsLoader!!,
+                items = itemsLoader!!,
                 itemSaver = itemSaver,
-                itemIdProvider = itemIdProvider,
-                itemContents = itemContents,
+                key = key,
+                content = content,
                 selectionMode = selectionMode,
                 filter = filter,
                 divider = divider,

@@ -11,10 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,13 +24,12 @@ import com.michaelflisar.composedialogs.core.DialogDefaults
 import com.michaelflisar.composedialogs.core.DialogEvent
 import com.michaelflisar.composedialogs.core.DialogOptions
 import com.michaelflisar.composedialogs.core.defaultDialogStyle
-import com.michaelflisar.composedialogs.core.rememberDialogState
 import com.michaelflisar.composedialogs.dialogs.frequency.classes.Frequency
 import com.michaelflisar.composedialogs.dialogs.frequency.classes.FrequencyStateSaver
+import com.michaelflisar.composedialogs.dialogs.frequency.composables.DayOfMonth
 import com.michaelflisar.composedialogs.dialogs.frequency.composables.Dropdown
-import com.michaelflisar.composedialogs.dialogs.frequency.composables.InputButton
 import com.michaelflisar.composedialogs.dialogs.frequency.composables.NumericInput
-import com.michaelflisar.composedialogs.dialogs.time.DialogTime
+import com.michaelflisar.composedialogs.dialogs.frequency.composables.Time
 import com.michaelflisar.composedialogs.dialogs.time.rememberDialogTime
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.Month
@@ -188,7 +184,12 @@ fun DialogFrequency(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            DayOfWeek(selectedDayOfWeek, firstDayOffset, texts, Modifier.weight(1f))
+                            com.michaelflisar.composedialogs.dialogs.frequency.composables.DayOfWeek(
+                                selectedDayOfWeek,
+                                firstDayOffset,
+                                texts,
+                                Modifier.weight(1f)
+                            )
                             Time(selectedTime, texts, Modifier.weight(1f))
                         }
                     }
@@ -213,7 +214,11 @@ fun DialogFrequency(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Month(selectedMonthOfYear, texts, Modifier.weight(1f))
+                            com.michaelflisar.composedialogs.dialogs.frequency.composables.Month(
+                                selectedMonthOfYear,
+                                texts,
+                                Modifier.weight(1f)
+                            )
                             DayOfMonth(
                                 selectedMonthOfYear.value,
                                 selectedDayOfMonth,
@@ -226,99 +231,6 @@ fun DialogFrequency(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun Month(
-    selectedMonthOfYear: MutableState<Month>,
-    texts: DialogFrequency.Texts,
-    modifier: Modifier = Modifier
-) {
-    Dropdown<Month>(
-        modifier = modifier,
-        items = Month.entries,
-        mapper = { item, dropdown -> texts.nameOfMonth(item) },
-        selected = selectedMonthOfYear,
-        title = texts.monthOfYear
-    )
-}
-
-@Composable
-private fun DayOfMonth(
-    selectedMonth: Month,
-    selectedDayOfMonth: MutableState<Int>,
-    texts: DialogFrequency.Texts,
-    modifier: Modifier = Modifier
-) {
-    val items = remember(selectedMonth) {
-        when (selectedMonth) {
-            Month.FEBRUARY -> (1..29).toList()
-            Month.APRIL, Month.JUNE, Month.SEPTEMBER, Month.NOVEMBER -> (1..30).toList()
-            else -> (1..31).toList()
-        }
-    }
-    LaunchedEffect(items.size) {
-        if (selectedDayOfMonth.value > items.last()) {
-            selectedDayOfMonth.value = items.last()
-        }
-    }
-    Dropdown<Int>(
-        modifier = modifier,
-        items = items,
-        mapper = { item, dropdown -> item.toString() },
-        selected = selectedDayOfMonth,
-        title = texts.dayOfMonth
-    )
-}
-
-@Composable
-private fun DayOfWeek(
-    selectedDayOfWeek: MutableState<DayOfWeek>,
-    firstDayOffset: DayOfWeek,
-    texts: DialogFrequency.Texts,
-    modifier: Modifier = Modifier
-) {
-    val items by remember {
-        derivedStateOf {
-            val days = DayOfWeek.entries.toMutableList()
-            while (days.first() != firstDayOffset) {
-                val first = days.drop(1)
-                days += first
-            }
-            days
-        }
-    }
-    Dropdown<DayOfWeek>(
-        modifier = modifier,
-        items = items,
-        mapper = { item, dropdown -> texts.nameOfDayOfWeek(item) },
-        selected = selectedDayOfWeek,
-        title = texts.dayOfWeek
-    )
-}
-
-@Composable
-private fun Time(
-    selectedTime: MutableState<kotlinx.datetime.LocalTime>,
-    texts: DialogFrequency.Texts,
-    modifier: Modifier = Modifier
-) {
-    val showDialogTime = rememberDialogState()
-    InputButton(
-        modifier = modifier,
-        title = texts.time,
-        value = selectedTime.value.toString(),
-        onClick = {
-            showDialogTime.show()
-        }
-    )
-    if (showDialogTime.visible) {
-        DialogTime(
-            state = showDialogTime,
-            time = selectedTime,
-            title = { Text(texts.time) }
-        )
     }
 }
 
@@ -354,42 +266,3 @@ fun rememberDialogFrequency(
     return rememberSaveable(saver = FrequencyStateSaver) { mutableStateOf(frequency) }
 }
 
-object DialogFrequencyDefaults {
-
-
-    @Composable
-    fun texts(
-        interval: String = "Interval",
-        type: String = "Type",
-        every: String = "Every",
-        monthOfYear: String = "Month of Year",
-        dayOfMonth: String = "Day of Month",
-        dayOfWeek: String = "Day of Week",
-        time: String = "Time",
-        nameOfType: (day: Frequency.Type, interval: Int) -> String = { type, interval ->
-            val singular = when (type) {
-                Frequency.Type.Daily -> "day"
-                Frequency.Type.Weekly -> "week"
-                Frequency.Type.Monthly -> "month"
-                Frequency.Type.Yearly -> "year"
-            }
-            val plural = singular + "s"
-            if (interval == 1) singular else plural
-        },
-        nameOfDayOfWeek: (day: DayOfWeek) -> String = { it.name.lowercase().replaceFirstChar { it.uppercase() } },
-        nameOfMonth: (month: Month) -> String = { it.name.lowercase().replaceFirstChar { it.uppercase() }  },
-    ): DialogFrequency.Texts {
-        return DialogFrequency.Texts(
-            interval = interval,
-            type = type,
-            every = every,
-            monthOfYear = monthOfYear,
-            dayOfMonth = dayOfMonth,
-            dayOfWeek = dayOfWeek,
-            time = time,
-            nameOfType = nameOfType,
-            nameOfDayOfWeek = nameOfDayOfWeek,
-            nameOfMonth = nameOfMonth
-        )
-    }
-}

@@ -25,7 +25,6 @@ import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
-import com.michaelflisar.composedialogs.core.DialogState
 import com.michaelflisar.composedialogs.core.Dialog
 import com.michaelflisar.composedialogs.core.DialogButtons
 import com.michaelflisar.composedialogs.core.DialogDefaults
@@ -34,16 +33,11 @@ import com.michaelflisar.composedialogs.core.defaultDialogStyle
 import com.michaelflisar.composedialogs.core.isLandscape
 import com.michaelflisar.composedialogs.core.ComposeDialogStyle
 import com.michaelflisar.composedialogs.core.DialogOptions
-import com.michaelflisar.composedialogs.dialogs.color.DialogColorDefaults.texts
 import com.michaelflisar.composedialogs.dialogs.color.classes.ColorStateSaver
 import com.michaelflisar.composedialogs.dialogs.color.classes.ColorStateSaverNullable
 import com.michaelflisar.composedialogs.dialogs.color.composables.Content
 import com.michaelflisar.composedialogs.dialogs.color.composables.TitleForPages
-import com.michaelflisar.composedialogs.color.resources.Res
-import com.michaelflisar.composedialogs.color.resources.composedialogs_color_label_custom
-import com.michaelflisar.composedialogs.color.resources.composedialogs_color_label_presets
 import com.michaelflisar.composedialogs.core.BaseDialogState
-import org.jetbrains.compose.resources.stringResource
 
 // begin-snippet: DialogColor::constructor
 /**
@@ -176,6 +170,7 @@ fun DialogColor(
 
 @Stable
 object DialogColor {
+
     @Immutable
     internal enum class Page {
         Custom,
@@ -214,25 +209,4 @@ fun rememberDialogColor(
     color: Color
 ): MutableState<Color> {
     return rememberSaveable(saver = ColorStateSaver) { mutableStateOf(color) }
-}
-
-@Stable
-object DialogColorDefaults {
-
-    /**
-     * texts for the color pager
-     *
-     * @param presets the label of the pager title for the presets color page
-     * @param custom the label of the pager title for the custom color page
-     */
-    @Composable
-    fun DialogColorDefaults.texts(
-        presets: String = stringResource(Res.string.composedialogs_color_label_presets),
-        custom: String = stringResource(Res.string.composedialogs_color_label_custom),
-    ): DialogColor.Texts {
-        return DialogColor.Texts(
-            presets = presets,
-            custom = custom
-        )
-    }
 }

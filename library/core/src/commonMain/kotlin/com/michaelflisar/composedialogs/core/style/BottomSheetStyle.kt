@@ -5,10 +5,12 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -34,8 +36,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.positionOnScreen
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
@@ -65,8 +68,8 @@ object BottomSheetStyleDefaults {
     val peekHeight: (containerHeight: Dp, sheetHeight: Dp) -> Dp =
         { containerHeight, sheetHeight -> (containerHeight * .5f).coerceAtMost(sheetHeight) }
 
-    val shape: Shape
-        @Composable get() = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+    val topCornerSize: Dp
+        @Composable get() = 28.dp
 
     val containerColor: Color
         @Composable get() = MaterialTheme.colorScheme.surface
@@ -94,7 +97,7 @@ internal class BottomSheetStyle(
     private val scrim: Boolean,
     // Style
     private val options: StyleOptions = StyleOptions(),
-    private val shape: Shape,
+    private val topCornerSize: Dp,
     private val containerColor: Color,
     private val iconColor: Color,
     private val titleColor: Color,
@@ -154,14 +157,14 @@ internal class BottomSheetStyle(
         val onDismiss = {
             if (state.interactionSource.dismissAllowed.value) {
                 coroutineScope.launch {
-                    //println("dismissed - animateTo...")
+                    //println("BOTTOMSHEET - dismissed - animateTo...")
                     //dismissed = true
                     bottomSheetState.animateTo(SheetDetent.Hidden)
                     if (buttonPressed)
                         state.dismiss()
                     else
                         state.dismiss(onEvent)
-                    //println("dismissed - state.visible = ${state.visible}")
+                    //println("BOTTOMSHEET - dismissed - state.visible = ${state.visible}")
                 }
                 true
             } else {
@@ -178,18 +181,18 @@ internal class BottomSheetStyle(
                 bottomSheetState.currentDetent == SheetDetent.Hidden &&
                 bottomSheetState.targetDetent == SheetDetent.Hidden
             ) {
-                //println("Detent is hidden => calling onDismiss...")
+                //println("BOTTOMSHEET - Detent is hidden => calling onDismiss...")
                 onDismiss()
             }
         }
 
         //LaunchedEffect(bottomSheetState.isIdle) {
-        //    println("TEST - isIdle = ${bottomSheetState.isIdle} | target = ${bottomSheetState.currentDetent.identifier} | interaction allowed = ${state.interactionSource.dismissAllowed.value}")
+        //    println("BOTTOMSHEET - TEST - isIdle = ${bottomSheetState.isIdle} | target = ${bottomSheetState.currentDetent.identifier} | interaction allowed = ${state.interactionSource.dismissAllowed.value}")
         //    if (bottomSheetState.isIdle &&
         //        bottomSheetState.currentDetent == SheetDetent.Hidden &&
         //        !state.interactionSource.dismissAllowed.value
         //    ) {
-        //        println("TEST - show again")
+        //        println("BOTTOMSHEET - TEST - show again")
         //        bottomSheetState.currentDetent = SheetDetent.FullyExpanded
         //    }
         //}
@@ -202,6 +205,10 @@ internal class BottomSheetStyle(
         }
 
         val scrimSize = remember { mutableStateOf(DpSize.Zero) }
+
+        //LaunchedEffect(bottomSheetState.offset) {
+        //    println("BOTTOMSHEET - offset changed: ${bottomSheetState.offset}")
+        //}
 
         UnstyledModalBottomSheet(
             state = bottomSheetState,
@@ -219,154 +226,237 @@ internal class BottomSheetStyle(
                             .fillMaxSize()
                             .onSizeChanged {
                                 scrimSize.value =
-                                    with(density) { DpSize(it.width.toDp(), it.height.toDp()) }
+                                    with(density) {
+                                        DpSize(
+                                            it.width.toDp(),
+                                            it.height.toDp()
+                                        )
+                                    }
                             }
                     )
                 }
             }
         ) {
+            val bottomOfDragHandle = remember { mutableStateOf(0.dp) }
+            val topOfButtons = remember { mutableStateOf(0.dp) }
+            val buttonsOffset = remember { mutableStateOf(0.dp) }
 
-            val footerSize = remember { mutableStateOf(DpSize.Zero) }
-            val sheetSize = remember { mutableStateOf(DpSize.Zero) }
-
-            val paddingTop = 12.dp
-            val dragHandleHeight = 4.dp
-            val dragHandleVerticalPadding = 22.dp
-
-            val isCompact by remember {
-                derivedStateOf {
-                    scrimSize.value.width < 640.dp
+            LaunchedEffect(bottomOfDragHandle.value, topOfButtons.value) {
+                val offsetForButtons = if (bottomOfDragHandle.value > topOfButtons.value) {
+                    bottomOfDragHandle.value - topOfButtons.value
+                } else {
+                    0.dp
                 }
+                //println("BOTTOMSHEET - bottomOfDragHandle: ${bottomOfDragHandle.value} | topOfButtons: ${topOfButtons.value} | offsetForButtons: $offsetForButtons")
+                buttonsOffset.value = offsetForButtons
             }
 
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = paddingTop)
-                    .then(
-                        if (isCompact) {
-                            Modifier
-                        } else Modifier.padding(horizontal = 56.dp)
-                    )
-                    .statusBarsPadding()
-                    .padding(
-                        WindowInsets.navigationBars
-                            .only(WindowInsetsSides.Horizontal)
-                            .asPaddingValues()
-                    ),
-                contentAlignment = Alignment.TopCenter,
             ) {
-                Sheet(
-                    modifier = Modifier
-                        .onSizeChanged {
-                            sheetSize.value =
-                                with(density) { DpSize(it.width.toDp(), it.height.toDp()) }
-                        }
-                        .shadow(4.dp, shape)
-                        .clip(shape)
-                        .background(containerColor)
-                        .widthIn(max = 640.dp)
-                        .fillMaxWidth()
-                ) {
+                val footerSize = remember { mutableStateOf(DpSize.Zero) }
 
-                    Column(
-                        Modifier
+                val dragHandleHeight = 4.dp
+                val dragHandleVerticalPadding = 22.dp
+
+                val isCompact by remember {
+                    derivedStateOf {
+                        scrimSize.value.width < 640.dp
+                    }
+                }
+
+                // 1) Box for Sheet (without Buttons!)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .then(
+                            if (isCompact) {
+                                Modifier
+                            } else Modifier.padding(horizontal = 56.dp)
+                        )
+                        //.statusBarsPadding()
+                        .padding(
+                            WindowInsets.navigationBars
+                                .only(WindowInsetsSides.Horizontal)
+                                .asPaddingValues()
+                        ),
+                    contentAlignment = Alignment.TopCenter,
+                )
+                {
+                    val shape = RoundedCornerShape(
+                        topStart = topCornerSize,
+                        topEnd = topCornerSize,
+                        bottomStart = 0.dp,
+                        bottomEnd = 0.dp
+                    )
+                    Sheet(
+                        modifier = Modifier
+                            .statusBarsPadding()
+                            .shadow(4.dp, shape)
+                            .clip(shape)
+                            .background(containerColor)
+                            .widthIn(max = 640.dp)
                             .fillMaxWidth()
                     ) {
 
-                        // 1) Drag Header On Top
-                        if (dragHandle) {
-                            DragIndication(
-                                modifier = Modifier
-                                    .align(Alignment.CenterHorizontally)
-                                    .padding(vertical = dragHandleVerticalPadding)
-                                    .background(
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        shape = RoundedCornerShape(percent = 50)
-                                    )
-                                    .width(32.dp)
-                                    .height(dragHandleHeight)
-                            )
-                        }
-
-                        // 2) Icon + Title
-                        ComposeDialogTitle(
-                            modifier = Modifier
-                                .padding(horizontal = 24.dp),
-                            title = title,
-                            icon = icon,
-                            iconColor = iconColor,
-                            titleColor = titleColor,
-                            options = this@BottomSheetStyle.options,
-                        )
-
-                        // 3) Content
-                        ComposeDialogContent(
-                            content = content,
-                            contentColor = contentColor,
-                            modifier = Modifier.weight(weight = 1f, fill = false)
-                                .padding(horizontal = 24.dp),
-                            bottomPadding = spacing.contentPadding(buttons)
-                        )
-
-                        // 4) Footer
                         Column(
-                            modifier = Modifier
-                                .onSizeChanged {
-                                    footerSize.value =
-                                        with(density) { DpSize(it.width.toDp(), it.height.toDp()) }
-                                }
-                                .then(
-                                    if (buttons.enabled) {
-                                        Modifier.offset {
-                                            val limit =
-                                                paddingTop.toPx() + footerSize.value.height.toPx() +
-                                                        (if (dragHandle) (dragHandleHeight.toPx() + dragHandleVerticalPadding.toPx() * 2) else 0f)
+                            Modifier
+                                .fillMaxWidth()
 
-
-                                            var yOffset =
-                                                (sheetSize.value.height.toPx() + paddingTop.toPx() - bottomSheetState.offset).roundToInt() * -1 + 1
-                                            if (bottomSheetState.offset < limit) {
-                                                // we only see the buttons and handle anymore
-                                                //println("bottom reached")
-                                                yOffset += (limit - bottomSheetState.offset).roundToInt()
-                                            }
-
-                                            println("yOffset = $yOffset | sheet height = ${sheetSize.value.height} | offset = ${bottomSheetState.offset} | limit = $limit")
-                                            IntOffset(
-                                                0,
-                                                yOffset // +1 for rounding errors? otherwise it sometimes does show a pixel row below the bottom that is not overlayed by the buttons...
-                                            )
-                                        }
-                                    } else Modifier
-                                )
                         ) {
-                            ComposeDialogButtons(
+
+                            // 1) Drag Header On Top
+                            if (dragHandle) {
+                                DragIndication(
+                                    modifier = Modifier
+                                        .onGloballyPositioned {
+                                            val position = it.positionOnScreen()
+                                            bottomOfDragHandle.value =
+                                                with(density) { (position.y + it.size.height).toDp() }
+                                            //println("BOTTOMSHEET - drag handle position: $position")
+                                        }
+                                        .align(Alignment.CenterHorizontally)
+                                        .padding(vertical = dragHandleVerticalPadding)
+                                        .background(
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            shape = RoundedCornerShape(percent = 50)
+                                        )
+                                        .width(32.dp)
+                                        .height(dragHandleHeight)
+                                )
+                            } else {
+                                Spacer(
+                                    modifier = Modifier
+                                        .height(topCornerSize)
+                                        .then(
+                                            if (!dragHandle) {
+                                                Modifier.onGloballyPositioned {
+                                                    val position = it.positionOnScreen()
+                                                    bottomOfDragHandle.value =
+                                                        with(density) { (position.y + it.size.height).toDp() }
+                                                }
+                                            } else Modifier
+                                        )
+                                )
+                            }
+
+                            // 2) Icon + Title
+                            ComposeDialogTitle(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(containerColor)
                                     .padding(horizontal = 24.dp),
-                                buttons = buttons,
-                                state = state,
-                                options = options,
-                                dismissOnButtonPressed = {
-                                    buttonPressed = true
-                                    onDismiss()
-                                },
-                                onEvent = onEvent
+                                title = title,
+                                icon = icon,
+                                iconColor = iconColor,
+                                titleColor = titleColor,
+                                options = this@BottomSheetStyle.options,
                             )
 
-                            // 5) Spacer behind nav bar
+                            // 3) Content
+                            ComposeDialogContent(
+                                content = content,
+                                contentColor = contentColor,
+                                modifier = Modifier.weight(weight = 1f, fill = false)
+                                    .padding(horizontal = 24.dp),
+                                bottomPadding = spacing.contentPadding(buttons)
+                            )
+
+                            // 4) Footer
                             Spacer(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .windowInsetsBottomHeight(WindowInsets.navigationBars)
-                                    .background(containerColor)
+                                modifier = Modifier.height(footerSize.value.height)
                             )
                         }
+                    }
+                }
+
+                // 2) Box for Buttons (overlays the Sheet, but is needed to have the buttons always visible when the sheet is dragged to the bottom)
+                val boxSize = remember { mutableStateOf(DpSize.Zero) }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .then(
+                            if (isCompact) {
+                                Modifier
+                            } else Modifier.padding(horizontal = 56.dp)
+                        )
+                        .padding(
+                            WindowInsets.navigationBars
+                                .only(WindowInsetsSides.Horizontal)
+                                .asPaddingValues()
+                        )
+                        .fillMaxHeight()
+                        .onSizeChanged {
+                            boxSize.value =
+                                with(density) { DpSize(it.width.toDp(), it.height.toDp()) }
+                        }
+                        .offset {
+                            IntOffset(
+                                0,
+                                (boxSize.value.height - with(density) { bottomSheetState.offset.toDp() }).toPx()
+                                    .roundToInt() * -1
+                                        + with(density) { buttonsOffset.value.toPx().roundToInt() }
+                            )
+                        },
+                    contentAlignment = Alignment.BottomCenter,
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .onGloballyPositioned {
+                                val position = it.positionOnScreen()
+                                // top of buttons is only calculated once!
+                                if (topOfButtons.value == 0.dp)
+                                    topOfButtons.value = with(density) { position.y.toDp() }
+                            }
+                            .onSizeChanged {
+                                footerSize.value =
+                                    with(density) { DpSize(it.width.toDp(), it.height.toDp()) }
+                            }
+                    ) {
+                        Footer(
+                            buttons = buttons,
+                            state = state,
+                            options = options,
+                            containerColor = containerColor,
+                            onDismiss = onDismiss,
+                            setButtonPressed = { buttonPressed = it },
+                            onEvent = onEvent
+                        )
                     }
                 }
             }
         }
     }
+}
+
+@Composable
+private fun ColumnScope.Footer(
+    buttons: DialogButtons,
+    state: BaseDialogState,
+    options: DialogOptions,
+    containerColor: Color,
+    onDismiss: () -> Boolean,
+    setButtonPressed: (value: Boolean) -> Unit,
+    onEvent: (event: DialogEvent) -> Unit,
+) {
+    ComposeDialogButtons(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(containerColor)
+            .padding(horizontal = 24.dp),
+        buttons = buttons,
+        state = state,
+        options = options,
+        dismissOnButtonPressed = {
+            setButtonPressed(true)
+            onDismiss()
+        },
+        onEvent = onEvent
+    )
+
+    // 5) Spacer behind nav bar
+    Spacer(
+        Modifier
+            .fillMaxWidth()
+            .windowInsetsBottomHeight(WindowInsets.navigationBars)
+            .background(containerColor)
+    )
 }

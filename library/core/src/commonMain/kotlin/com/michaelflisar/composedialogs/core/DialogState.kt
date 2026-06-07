@@ -110,7 +110,12 @@ fun rememberDialogState(
     val initialData = if (visible) Unit else null
 
     // extra data - should survice screen rotations and activity recreates BUT must be reset if dialog is dismissed
-    val state = rememberSaveable(saver = autoSaver()) { mutableStateOf(initialData) }
+    val state = rememberSaveable(
+        saver = Saver(
+            save = { it.value != null },
+            restore = { visible -> mutableStateOf(if (visible) Unit else null) }
+        )
+    ) { mutableStateOf(initialData) }
 
     // showing should survive, even screen rotations and activity recreations
     val showing = state.value != null
@@ -140,9 +145,27 @@ fun rememberDialogState(
 /**
  * creates a [DialogState] object for usage outside of Compose (e.g. ViewModel)
  *
+ * @param data the initial data of this state (should nearly always be null which means that the dialog is not visible initially)
+ * @param buttonPositiveEnabled define if the positive button should be enabled initially or not
+ * @param buttonNegativeEnabled define if the negative button should be enabled initially or not
+ * @param dismissAllowed define if the dialog can be initially dismissed or not
+ * @param swipeAllowed define if the dialog can be initially swiped away or not
+ * @param onStateChanged callback that will be called whenever the dialog is shown or dismissed with the current data (null if dismissed)
+ *
  * NOTE:
  * - no automatic state saving (no rememberSaveable)
  * - interaction state will be reset whenever the dialog is shown again
+ *
+ * EXAMPLE USAGE in a ViewModel (if state should survice process death):
+ * ```
+ * class MyViewModel: ViewModel() {
+ *   private val KEY = "dialog_data"
+ *   val dialog = dialogStateOf(
+ * 	   data = savedStateHandle.get<String?>(KEY),
+ *     onStateChanged = { savedStateHandle[KEY] = it }
+ *   )
+ * }
+ * ```
  */
 fun <T : Any> dialogStateOf(
     data: T?,
@@ -178,9 +201,27 @@ fun <T : Any> dialogStateOf(
 /**
  * creates a [DialogState] object for usage outside of Compose (e.g. ViewModel)
  *
+ * @param visible the initial visibility state
+ * @param buttonPositiveEnabled define if the positive button should be enabled initially or not
+ * @param buttonNegativeEnabled define if the negative button should be enabled initially or not
+ * @param dismissAllowed define if the dialog can be initially dismissed or not
+ * @param swipeAllowed define if the dialog can be initially swiped away or not
+ * @param onStateChanged callback that will be called whenever the dialog is shown or dismissed with the current data (true if shown, false if dismissed)
+ *
  * NOTE:
- * - no automatic state saving (no rememberSaveable)
+ * - no automatic state saving (like rememberDialogState) - you have to handle this by yourself if needed
  * - interaction state will be reset whenever the dialog is shown again
+ *
+ * EXAMPLE USAGE in a ViewModel (if state should survice process death):
+ * ```
+ * class MyViewModel: ViewModel() {
+ *   private val KEY = "dialog_data"
+ *   val dialog = dialogStateOf(
+ * 	   data = savedStateHandle.get<Boolean?>(KEY),
+ *     onStateChanged = { savedStateHandle[KEY] = it }
+ *   )
+ * }
+ * ```
  */
 fun dialogStateOf(
     visible: Boolean = false,
@@ -188,7 +229,7 @@ fun dialogStateOf(
     buttonNegativeEnabled: Boolean = true,
     dismissAllowed: Boolean = true,
     swipeAllowed: Boolean = true,
-    onStateChanged: ((Unit?) -> Unit)? = null,
+    onStateChanged: ((visible: Boolean) -> Unit)? = null,
 ): DialogStateNoData {
 
     val initialData = if (visible) Unit else null
@@ -210,7 +251,7 @@ fun dialogStateOf(
         state = state,
         interactionSource = interactionState,
         onBeforeShow = { interactionState.value = createInteraction().value },
-        onShow = { onStateChanged?.invoke(it) },
-        onDismiss = { onStateChanged?.invoke(null) }
+        onShow = { onStateChanged?.invoke(true) },
+        onDismiss = { onStateChanged?.invoke(false) }
     )
 }

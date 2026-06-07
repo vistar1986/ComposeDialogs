@@ -1,6 +1,7 @@
 package com.michaelflisar.composedialogs.core
 
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -134,18 +135,18 @@ object DialogDefaults {
     // end-snippet
     {
         return DialogStyle(
-            swipeDismissable,
+            swipeDismissable = swipeDismissable,
             // DialogProperties
-            dismissOnBackPress,
-            dismissOnClickOutside,
-            scrim,
+            dismissOnBackPress = dismissOnBackPress,
+            dismissOnClickOutside = dismissOnClickOutside,
+            scrim = scrim,
             // Style
-            options,
-            shape,
-            containerColor,
-            iconColor,
-            titleColor,
-            contentColor
+            options = options,
+            shape = shape,
+            containerColor = containerColor,
+            iconColor = iconColor,
+            titleColor = titleColor,
+            contentColor = contentColor
         )
     }
 
@@ -183,7 +184,7 @@ object DialogDefaults {
         scrim: Boolean = true,
         // Style
         options: StyleOptions = StyleOptions(),
-        shape: Shape = BottomSheetStyleDefaults.shape,
+        topCornerSize: Dp = BottomSheetStyleDefaults.topCornerSize,
         containerColor: Color = BottomSheetStyleDefaults.containerColor,
         iconColor: Color = BottomSheetStyleDefaults.iconColor,
         titleColor: Color = BottomSheetStyleDefaults.titleColor,
@@ -204,7 +205,7 @@ object DialogDefaults {
             scrim,
             // Style
             options,
-            shape,
+            topCornerSize,
             containerColor,
             iconColor,
             titleColor,
@@ -517,12 +518,18 @@ class DialogState<T> internal constructor(
 class DialogStateNoData internal constructor(
     state: MutableState<Unit?>,
     interactionSource: MutableState<DialogInteractionSource>,
-    onBeforeShow: ((data: Unit) -> Unit)? = null,
-    onShow: ((data: Unit) -> Unit)? = null,
+    onBeforeShow: (() -> Unit)? = null,
+    onShow: (() -> Unit)? = null,
     onDismiss: (() -> Unit)? = null
 ) : BaseDialogState() {
 
-    private val impl = DialogStateImpl(state, interactionSource, onBeforeShow, onShow, onDismiss)
+    private val impl = DialogStateImpl(
+        state,
+        interactionSource,
+        onBeforeShow = onBeforeShow?.let { { onBeforeShow() } },
+        onShow = onShow?.let { { onShow() } },
+        onDismiss
+    )
 
     override val visible: Boolean get() = impl.visible
     override val interactionSource get() = impl.interactionSource
