@@ -107,14 +107,18 @@ There are 2 ways to show a list, one by providing a list of items and one by pro
  */
 @Composable
 fun <T> DialogList(
+    // Base Dialog - State
     state: BaseDialogState,
+    // Custom - Required
     items: List<T>,
     key: (item: T) -> Int,
     content: @Composable (item: T, context: DialogList.ItemContext) -> Unit,
     selectionMode: DialogList.SelectionMode<T>,
+    // Custom - Optional
     divider: @Composable (() -> Unit)?  = null,
     description: String = "",
     filter: DialogList.Filter<T>? = null,
+    // Base Dialog - Optional
     title: (@Composable () -> Unit)? = null,
     icon: (@Composable () -> Unit)? = null,
     style: ComposeDialogStyle = DialogDefaults.defaultDialogStyle(),
@@ -192,12 +196,15 @@ fun <T> DialogList(
  */
 @Composable
 fun <T> DialogList(
+    // Base Dialog - State
     state: BaseDialogState,
+    // Custom - Required
     items: suspend () -> List<T>,
     key: (item: T) -> Int,
     content: @Composable (item: T, context: DialogList.ItemContext) -> Unit,
     selectionMode: DialogList.SelectionMode<T>,
     itemSaver: Saver<MutableState<List<T>>, out Any>? = null,
+    // Custom - Optional
     loadingIndicator: @Composable () -> Unit = {
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
@@ -206,6 +213,7 @@ fun <T> DialogList(
     divider: @Composable (() -> Unit)?  = null,
     description: String = "",
     filter: DialogList.Filter<T>? = null,
+    // Base Dialog - Optional
     title: (@Composable () -> Unit)? = null,
     icon: (@Composable () -> Unit)? = null,
     style: ComposeDialogStyle = DialogDefaults.defaultDialogStyle(),
