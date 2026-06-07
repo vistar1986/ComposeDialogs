@@ -14,11 +14,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogWindowProvider
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.composeunstyled.LocalModalWindow
 import kotlinx.coroutines.CoroutineDispatcher
@@ -89,5 +93,14 @@ actual fun updateStatusbarColor(darkStatusBar: Boolean) {
         val windowInsetsController = WindowInsetsControllerCompat(window, window.decorView)
         windowInsetsController.isAppearanceLightStatusBars = !darkStatusBar
         //windowInsetsController.isAppearanceLightNavigationBars = false
+    }
+}
+
+@Composable
+actual fun updateNavigationbarColor(darkNavigationBar: Boolean) {
+    val window = LocalModalWindow.current
+    SideEffect {
+        val windowInsetsController = WindowInsetsControllerCompat(window, window.decorView)
+        windowInsetsController.isAppearanceLightNavigationBars = !darkNavigationBar
     }
 }

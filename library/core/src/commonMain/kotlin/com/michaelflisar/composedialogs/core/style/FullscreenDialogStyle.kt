@@ -51,6 +51,7 @@ import com.michaelflisar.composedialogs.core.internal.ComposeDialogButton
 import com.michaelflisar.composedialogs.core.internal.ComposeDialogImageButton
 import com.michaelflisar.composedialogs.core.internal.TitleIcon
 import com.michaelflisar.composedialogs.core.internal.TitleTitle
+import com.michaelflisar.composedialogs.core.updateNavigationbarColor
 import com.michaelflisar.composedialogs.core.updateStatusbarColor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -172,9 +173,10 @@ internal class FullscreenDialogStyle(
                 waitForDismissAnimationAndUpdateState()
             }
 
-            val statusBarColor =
-                rememberColor(toolbarScrollBehaviour, toolbarColor, toolbarColorExpanded)
+            val statusBarColor = rememberColor(toolbarScrollBehaviour, toolbarColor, toolbarColorExpanded)
             updateStatusbarColor(statusBarColor.value.luminance() < .5f)
+
+            updateNavigationbarColor(contentColor.luminance() > .5f)
 
             DialogPanel(
                 modifier = Modifier

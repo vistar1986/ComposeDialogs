@@ -43,3 +43,6 @@ expect fun DialogContentScrollableLazyColumn(
 
 @Composable
 expect fun updateStatusbarColor(darkStatusBar: Boolean)
+
+@Composable
+expect fun updateNavigationbarColor(darkNavigationBar: Boolean)

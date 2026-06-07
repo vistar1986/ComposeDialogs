@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionOnScreen
@@ -60,6 +61,7 @@ import com.michaelflisar.composedialogs.core.StyleOptions
 import com.michaelflisar.composedialogs.core.composables.ComposeDialogButtons
 import com.michaelflisar.composedialogs.core.composables.ComposeDialogContent
 import com.michaelflisar.composedialogs.core.composables.ComposeDialogTitle
+import com.michaelflisar.composedialogs.core.updateNavigationbarColor
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -250,6 +252,8 @@ internal class BottomSheetStyle(
                 //println("BOTTOMSHEET - bottomOfDragHandle: ${bottomOfDragHandle.value} | topOfButtons: ${topOfButtons.value} | offsetForButtons: $offsetForButtons")
                 buttonsOffset.value = offsetForButtons
             }
+
+            updateNavigationbarColor(contentColor.luminance() > .5f)
 
             Box(
                 modifier = Modifier
