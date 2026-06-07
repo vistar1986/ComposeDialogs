@@ -61,7 +61,7 @@ import com.michaelflisar.composedialogs.core.StyleOptions
 import com.michaelflisar.composedialogs.core.composables.ComposeDialogButtons
 import com.michaelflisar.composedialogs.core.composables.ComposeDialogContent
 import com.michaelflisar.composedialogs.core.composables.ComposeDialogTitle
-import com.michaelflisar.composedialogs.core.updateNavigationbarColor
+import com.michaelflisar.composedialogs.core.UpdateNavigationbarColor
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -253,7 +253,7 @@ internal class BottomSheetStyle(
                 buttonsOffset.value = offsetForButtons
             }
 
-            updateNavigationbarColor(contentColor.luminance() > .5f)
+            UpdateNavigationbarColor(contentColor.luminance() > .5f)
 
             Box(
                 modifier = Modifier

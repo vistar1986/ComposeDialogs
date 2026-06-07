@@ -72,8 +72,7 @@ actual fun DialogContentScrollableLazyColumn(
 }
 
 @Composable
-actual fun updateStatusbarColor(darkStatusBar: Boolean) {}
+internal actual fun UpdateStatusbarColor(darkStatusBar: Boolean) {}
 
 @Composable
-actual fun updateNavigationbarColor(darkNavigationBar: Boolean) {
-}
+internal actual fun UpdateNavigationbarColor(darkNavigationBar: Boolean) {}

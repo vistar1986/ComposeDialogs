@@ -28,7 +28,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -51,8 +50,8 @@ import com.michaelflisar.composedialogs.core.internal.ComposeDialogButton
 import com.michaelflisar.composedialogs.core.internal.ComposeDialogImageButton
 import com.michaelflisar.composedialogs.core.internal.TitleIcon
 import com.michaelflisar.composedialogs.core.internal.TitleTitle
-import com.michaelflisar.composedialogs.core.updateNavigationbarColor
-import com.michaelflisar.composedialogs.core.updateStatusbarColor
+import com.michaelflisar.composedialogs.core.UpdateNavigationbarColor
+import com.michaelflisar.composedialogs.core.UpdateStatusbarColor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
@@ -174,9 +173,9 @@ internal class FullscreenDialogStyle(
             }
 
             val statusBarColor = rememberColor(toolbarScrollBehaviour, toolbarColor, toolbarColorExpanded)
-            updateStatusbarColor(statusBarColor.value.luminance() < .5f)
+            UpdateStatusbarColor(statusBarColor.value.luminance() < .5f)
 
-            updateNavigationbarColor(contentColor.luminance() > .5f)
+            UpdateNavigationbarColor(contentColor.luminance() > .5f)
 
             DialogPanel(
                 modifier = Modifier

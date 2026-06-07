@@ -82,7 +82,7 @@ actual fun DialogContentScrollableLazyColumn(
 }
 
 @Composable
-actual fun updateStatusbarColor(darkStatusBar: Boolean) {
+internal actual fun UpdateStatusbarColor(darkStatusBar: Boolean) {
     val window = LocalModalWindow.current
     LaunchedEffect(darkStatusBar) {
         // change system bars to transparent
@@ -97,7 +97,7 @@ actual fun updateStatusbarColor(darkStatusBar: Boolean) {
 }
 
 @Composable
-actual fun updateNavigationbarColor(darkNavigationBar: Boolean) {
+internal actual fun UpdateNavigationbarColor(darkNavigationBar: Boolean) {
     val window = LocalModalWindow.current
     SideEffect {
         val windowInsetsController = WindowInsetsControllerCompat(window, window.decorView)
