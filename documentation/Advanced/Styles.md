@@ -75,7 +75,7 @@ fun styleBottomSheet(
     scrim: Boolean = true,
     // Style
     options: StyleOptions = StyleOptions(),
-    shape: Shape = BottomSheetStyleDefaults.shape,
+    topCornerSize: Dp = BottomSheetStyleDefaults.topCornerSize,
     containerColor: Color = BottomSheetStyleDefaults.containerColor,
     iconColor: Color = BottomSheetStyleDefaults.iconColor,
     titleColor: Color = BottomSheetStyleDefaults.titleColor,
