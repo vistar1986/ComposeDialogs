@@ -12,11 +12,11 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import com.michaelflisar.composedialogs.core.ComposeDialogStyle
 import com.michaelflisar.composedialogs.core.DialogDefaults
 import com.michaelflisar.composedialogs.demo.BuildKonfig
 import com.michaelflisar.demo.classes.DemoStyle
@@ -45,15 +45,21 @@ import com.michaelflisar.democomposables.layout.rememberDemoExpandedRegions
 
 @Composable
 fun DemoApp() {
+    val lightTheme = rememberSaveable { mutableStateOf(true) }
     MaterialTheme(
-        colorScheme = lightColorScheme()// darkColorScheme()
+        colorScheme = if (lightTheme.value) {
+            lightColorScheme()
+        } else {
+            darkColorScheme()
+        }
     ) {
         DemoScaffold(
             appName = BuildKonfig.appName
         ) { modifier, showInfo ->
             DemoContent(
                 modifier = modifier,
-                showInfo = showInfo
+                showInfo = showInfo,
+                lightTheme = lightTheme
             )
         }
     }
@@ -64,6 +70,7 @@ fun DemoApp() {
 private fun DemoContent(
     modifier: Modifier,
     showInfo: (info: String) -> Unit,
+    lightTheme: MutableState<Boolean>,
 ) {
     // ------------
     // settings
@@ -72,16 +79,6 @@ private fun DemoContent(
     val demoStyle = rememberSaveable { mutableStateOf(DemoStyle.Dialog) }
     val swipeDismiss = rememberSaveable { mutableStateOf(false) }
     val showIcon = rememberSaveable { mutableStateOf(true) }
-    //val testFullscreenLevel = remember { mutableStateOf(0) }
-    //val test: (@Composable () -> Unit)? = if (testFullscreenLevel.value > 0) {
-    //    {
-    //        IconButton(
-    //            onClick = { testFullscreenLevel.value -= 1 }
-    //        ) {
-    //            Icon(Icons.Default.ArrowBack, null)
-    //        }
-    //    }
-    //} else null
 
     val style = when (demoStyle.value) {
         DemoStyle.Dialog -> DialogDefaults.styleDialog(
@@ -144,6 +141,7 @@ private fun DemoContent(
             // LEVEL 0 - settings + demo list
             DemoCollapsibleRegion("Settings", 1, collapsibleRegion) {
                 DemoColumn {
+                    DemoCheckbox(checked = lightTheme, title = "Light Theme?")
                     DemoSegmentedControl(state = demoStyle, items = DemoStyle.entries)
                     AnimatedVisibility(visible = demoStyle.value == DemoStyle.Dialog) {
                         DemoCheckbox(checked = swipeDismiss, title = "Support SwipeDismiss?")

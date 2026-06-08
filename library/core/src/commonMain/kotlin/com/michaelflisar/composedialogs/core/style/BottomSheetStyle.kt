@@ -253,7 +253,15 @@ internal class BottomSheetStyle(
                 buttonsOffset.value = offsetForButtons
             }
 
-            UpdateNavigationbarColor(contentColor.luminance() > .5f)
+            val buttonsAreVisible = remember {
+                derivedStateOf {
+                    bottomSheetState.currentDetent != SheetDetent.Hidden &&
+                    (bottomOfDragHandle.value == 0.dp || topOfButtons.value == 0.dp || bottomOfDragHandle.value > topOfButtons.value)
+                }
+            }
+
+            if (buttonsAreVisible.value)
+                UpdateNavigationbarColor(contentColor.luminance() > .5f)
 
             Box(
                 modifier = Modifier
