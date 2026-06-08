@@ -1,7 +1,3 @@
----
-icon: material/puzzle
----
-
 This shows a time selector dialog. 24h mode is optional.
 
 Check out the composable and it's documentation in the code snipplet below.

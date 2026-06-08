@@ -1,7 +1,3 @@
----
-icon: material/puzzle
----
-
 This shows a menu dialog that even supports unlimited nesting levels.
 
 Check out the composable and it's documentation in the code snipplet below.

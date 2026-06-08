@@ -1,7 +1,3 @@
----
-icon: material/puzzle
----
-
 This shows a frequency selector dialog. It supports daily, weekly, monthly and yearly frequencies.
 
 Check out the composable and it's documentation in the code snipplet below.

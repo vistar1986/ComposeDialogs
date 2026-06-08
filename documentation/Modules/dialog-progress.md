@@ -1,7 +1,3 @@
----
-icon: material/puzzle
----
-
 This shows a simple loading dialog with a progress indicator.
 
 Check out the composable and it's documentation in the code snipplet below.

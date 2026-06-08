@@ -1,7 +1,3 @@
----
-icon: material/puzzle
----
-
 This shows a simple dialog with some informational text.
 
 Check out the composable and it's documentation in the code snipplet below.

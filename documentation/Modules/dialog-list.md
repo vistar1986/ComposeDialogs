@@ -1,7 +1,3 @@
----
-icon: material/puzzle
----
-
 This shows a dialog with a list of items. Rendering, selection mode and more is adjustable.
 
 Check out the composable and it's documentation in the code snipplet below.
