@@ -28,12 +28,12 @@ DialogList(
     description = "Some optional description",
     state = state,
     items = items,
-    itemIdProvider = { items.indexOf(it) },
+    key = { items.indexOf(it) },
     selectionMode = DialogList.SelectionMode.SingleSelect(
         selected = selected,
         selectOnRadioButtonClickOnly = false
     ),
-    itemContents = DialogList.ItemDefaultContent(
+    content = DialogListDefaults.itemContent(
         text = { it }
     ),
     onEvent = {
